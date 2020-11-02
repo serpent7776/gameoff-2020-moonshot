@@ -1,0 +1,3 @@
+[submodule "lib/love-frame"]
+	path = lib/love-frame
+	url = https://github.com/serpent7776/love-frame.git
