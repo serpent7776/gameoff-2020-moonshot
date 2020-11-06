@@ -38,5 +38,8 @@ end
 
 lf.draw = function()
 	love.graphics.translate(W_2, -H)
+	love.graphics.setColor(0.86, 0.86, 0.86)
 	love.graphics.polygon('fill', moon_vertices)
+	love.graphics.setColor(0.1, 0, 0.86)
+	love.graphics.rectangle('fill', -10, moon_top_h*0.9, 20, moon_top_h*0.5)
 end
