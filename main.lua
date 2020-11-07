@@ -54,6 +54,8 @@ end
 
 moon_scene.load = function(self)
 	self:prepare_data()
+	-- viewport origin is at bottom, centre and goes right and up
+	lf.setup_viewport(W, -H)
 end
 
 moon_scene.keypressed = function(self, key, scancode, is_repeat)
@@ -81,6 +83,8 @@ end
    ]]
 
 launched_scene.load = function(self)
+	-- viewport origin is at centre, right and goes left and up
+	lf.setup_viewport(-W, H)
 end
 
 launched_scene.keypressed = function(self, key, scancode, is_repeat)
@@ -93,6 +97,9 @@ launched_scene.update = function(self, dt)
 end
 
 launched_scene.draw = function(self)
+	love.graphics.translate(-W, H_2)
+	love.graphics.setColor(0.1, 0, 0.86)
+	love.graphics.rectangle('fill', 30, -20, 60, 40)
 end
 
 --[[
@@ -102,8 +109,6 @@ end
 lf.init = function()
 	W, H = 800, 600
 	W_2, H_2 = W / 2, H / 2
-	-- viewport origin is at bottom, centre and goes right and up
-	lf.setup_viewport(W, -H)
 	switch_to(moon_scene)
 end
 
