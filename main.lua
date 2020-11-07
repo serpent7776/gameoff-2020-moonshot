@@ -18,6 +18,16 @@ local function sinc(x, y, a)
 	return lerp(x, y, math.sin(a * math.pi / 2))
 end
 
+local function clamp(x, min, max)
+	if x < min then
+		return min
+	elseif x > max then
+		return max
+	else
+		return x
+	end
+end
+
 local function table_copy(src)
 	local dst = {}
 	for idx, value in pairs(src) do
@@ -83,22 +93,50 @@ end
 
 launched_scene.load = function()
 	-- viewport origin is at centre, right and goes left and up
-	lf.setup_viewport(-W, H)
+	lf.setup_viewport(-W, -H)
+	launched_scene.rocket = {
+		x = 30,
+		y = 0,
+		vy = 0,
+		ay = 0,
+		width = 60,
+		height = 40,
+		height_2 = 20,
+		image = lf.get_texture('rocket.png'),
+	}
 end
 
 launched_scene.keypressed = function(key, scancode, is_repeat)
+	if key == 'space' then
+		launched_scene.rocket.thrust = true
+	end
 end
 
 launched_scene.keyreleased = function(key, scancode)
+	if key == 'space' then
+		launched_scene.rocket.thrust = false
+	end
 end
 
 launched_scene.update = function(dt)
+	local rocket = launched_scene.rocket
+	local g = 300
+	local a = 300
+	local vmax = 210
+	if rocket.thrust then
+		rocket.ay = a
+	else
+		rocket.ay = -g
+	end
+	rocket.vy = clamp(rocket.vy + rocket.ay * dt, -vmax, vmax)
+	rocket.y = rocket.y + rocket.vy * dt
 end
 
 launched_scene.draw = function()
-	love.graphics.translate(-W, H_2)
+	love.graphics.translate(-W, -H_2)
 	love.graphics.setColor(0.1, 0, 0.86)
-	love.graphics.rectangle('fill', 30, -20, 60, 40)
+	local rocket = launched_scene.rocket
+	love.graphics.draw(rocket.image, rocket.x, rocket.y, 0, 1, 1, 0, rocket.height_2)
 end
 
 --[[
