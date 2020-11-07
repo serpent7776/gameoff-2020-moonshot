@@ -47,6 +47,12 @@ moon_scene.load = function(self)
 	self:prepare_data()
 end
 
+moon_scene.keypressed = function(self, key, scancode, is_repeat)
+end
+
+moon_scene.keyreleased = function(self, key, scancode)
+end
+
 moon_scene.update = function(self, dt)
 end
 
@@ -67,8 +73,16 @@ lf.init = function()
 	switch_to(moon_scene)
 end
 
+love.keypressed = function(key, scancode, is_repeat)
+	scene:keypressed(key, scancode, is_repeat)
+end
+
+love.keyreleased = function(key, scancode)
+	scene:keyreleased(key, scancode)
+end
+
 lf.update = function(dt)
-	scene:update()
+	scene:update(dt)
 end
 
 lf.draw = function()
