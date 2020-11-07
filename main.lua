@@ -28,6 +28,15 @@ local function clamp(x, min, max)
 	end
 end
 
+local function spriteify(name, obj)
+	local tex = lf.get_texture(name)
+	obj.image = tex
+	obj.width = tex:getWidth()
+	obj.height = tex:getHeight()
+	obj.height_2 = obj.height / 2
+	return obj
+end
+
 local function table_copy(src)
 	local dst = {}
 	for idx, value in pairs(src) do
@@ -119,28 +128,20 @@ launched_scene.spawn = function(obj)
 end
 
 launched_scene.spawn_meteorite = function()
-	return launched_scene.spawn({
-		image = lf.get_texture('asteroid.png'),
-		width = 50,
-		height = 50,
-		height_2 = 25,
+	return spriteify('asteroid.png', launched_scene.spawn({
 		vx = 250,
-	})
+	}))
 end
 
 launched_scene.load = function()
 	-- viewport origin is at centre, right and goes left and up
 	lf.setup_viewport(-W, -H)
-	launched_scene.rocket = {
+	launched_scene.rocket = spriteify('rocket.png', {
 		x = 30,
 		y = 0,
 		vy = 0,
 		ay = 0,
-		width = 60,
-		height = 40,
-		height_2 = 20,
-		image = lf.get_texture('rocket.png'),
-	}
+	})
 	launched_scene.objects = {}
 	launched_scene.spawner = deferred(1, continue, launched_scene.spawn_meteorite)
 end
