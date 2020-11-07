@@ -91,6 +91,24 @@ end
    [ launched_scene
    ]]
 
+launched_scene.spawn = function(obj)
+	local y = (math.random() * 2 - 1) * H_2
+	obj.x = W
+	obj.y = y
+	table.insert(launched_scene.objects, obj)
+	return obj
+end
+
+launched_scene.spawn_meteorite = function()
+	return launched_scene.spawn({
+		image = lf.get_texture('asteroid.png'),
+		width = 50,
+		height = 50,
+		height_2 = 25,
+		vx = 250,
+	})
+end
+
 launched_scene.load = function()
 	-- viewport origin is at centre, right and goes left and up
 	lf.setup_viewport(-W, -H)
@@ -104,6 +122,8 @@ launched_scene.load = function()
 		height_2 = 20,
 		image = lf.get_texture('rocket.png'),
 	}
+	launched_scene.objects = {}
+	launched_scene.spawn_meteorite()
 end
 
 launched_scene.keypressed = function(key, scancode, is_repeat)
@@ -119,6 +139,12 @@ launched_scene.keyreleased = function(key, scancode)
 end
 
 launched_scene.update = function(dt)
+	-- objects
+	for idx, obj in ipairs(launched_scene.objects) do
+		obj.x = obj.x - obj.vx * dt
+		print(obj.x)
+	end
+	-- rocket
 	local rocket = launched_scene.rocket
 	local g = 300
 	local a = 300
@@ -134,7 +160,12 @@ end
 
 launched_scene.draw = function()
 	love.graphics.translate(-W, -H_2)
-	love.graphics.setColor(0.1, 0, 0.86)
+	love.graphics.setColor(1, 1, 1)
+	-- objects
+	for _, obj in ipairs(launched_scene.objects) do
+		love.graphics.draw(obj.image, obj.x, obj.y, 0, 1, 1, obj.width, obj.height_2)
+	end
+	-- rocket
 	local rocket = launched_scene.rocket
 	love.graphics.draw(rocket.image, rocket.x, rocket.y, 0, 1, 1, 0, rocket.height_2)
 end
