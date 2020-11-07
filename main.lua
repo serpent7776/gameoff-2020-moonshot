@@ -60,6 +60,9 @@ moon_scene.keypressed = function(self, key, scancode, is_repeat)
 end
 
 moon_scene.keyreleased = function(self, key, scancode)
+	if key == 'space' then
+		switch_to(launched_scene)
+	end
 end
 
 moon_scene.update = function(self, dt)
