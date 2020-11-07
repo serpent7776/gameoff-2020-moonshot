@@ -28,74 +28,74 @@ end
 
 local function switch_to(new_scene)
 	if scene and scene.unload then
-		scene:unload()
+		scene.unload()
 	end
 	scene = table_copy(new_scene)
-	scene:load()
+	scene.load()
 end
 
 --[[
    [ moon_scene
    ]]
 
-moon_scene.prepare_data = function(self)
-	self.moon_top_h = H * 0.1
-	self.moon_vertices = {}
+moon_scene.prepare_data = function()
+	moon_scene.moon_top_h = H * 0.1
+	moon_scene.moon_vertices = {}
 	local max_i = 10
 	for i = 0, max_i do
 		local c = max_i / 2
 		local x = (i - c) / c * W_2
-		local y = sinc(0, self.moon_top_h, i / c)
-		self.moon_vertices[i * 2 + 1] = x
-		self.moon_vertices[i * 2 + 2] = y
+		local y = sinc(0, moon_scene.moon_top_h, i / c)
+		moon_scene.moon_vertices[i * 2 + 1] = x
+		moon_scene.moon_vertices[i * 2 + 2] = y
 	end
 end
 
-moon_scene.load = function(self)
-	self:prepare_data()
+moon_scene.load = function()
+	moon_scene.prepare_data()
 	-- viewport origin is at bottom, centre and goes right and up
 	lf.setup_viewport(W, -H)
 end
 
-moon_scene.keypressed = function(self, key, scancode, is_repeat)
+moon_scene.keypressed = function(key, scancode, is_repeat)
 end
 
-moon_scene.keyreleased = function(self, key, scancode)
+moon_scene.keyreleased = function(key, scancode)
 	if key == 'space' then
 		switch_to(launched_scene)
 	end
 end
 
-moon_scene.update = function(self, dt)
+moon_scene.update = function(dt)
 end
 
-moon_scene.draw = function(self)
+moon_scene.draw = function()
 	love.graphics.translate(W_2, -H)
 	love.graphics.setColor(0.86, 0.86, 0.86)
-	love.graphics.polygon('fill', self.moon_vertices)
+	love.graphics.polygon('fill', moon_scene.moon_vertices)
 	love.graphics.setColor(0.1, 0, 0.86)
-	love.graphics.rectangle('fill', -10, self.moon_top_h*0.9, 20, self.moon_top_h*0.5)
+	love.graphics.rectangle('fill', -10, moon_scene.moon_top_h*0.9, 20, moon_scene.moon_top_h*0.5)
 end
 
 --[[
    [ launched_scene
    ]]
 
-launched_scene.load = function(self)
+launched_scene.load = function()
 	-- viewport origin is at centre, right and goes left and up
 	lf.setup_viewport(-W, H)
 end
 
-launched_scene.keypressed = function(self, key, scancode, is_repeat)
+launched_scene.keypressed = function(key, scancode, is_repeat)
 end
 
-launched_scene.keyreleased = function(self, key, scancode)
+launched_scene.keyreleased = function(key, scancode)
 end
 
-launched_scene.update = function(self, dt)
+launched_scene.update = function(dt)
 end
 
-launched_scene.draw = function(self)
+launched_scene.draw = function()
 	love.graphics.translate(-W, H_2)
 	love.graphics.setColor(0.1, 0, 0.86)
 	love.graphics.rectangle('fill', 30, -20, 60, 40)
@@ -112,17 +112,17 @@ lf.init = function()
 end
 
 love.keypressed = function(key, scancode, is_repeat)
-	scene:keypressed(key, scancode, is_repeat)
+	scene.keypressed(key, scancode, is_repeat)
 end
 
 love.keyreleased = function(key, scancode)
-	scene:keyreleased(key, scancode)
+	scene.keyreleased(key, scancode)
 end
 
 lf.update = function(dt)
-	scene:update(dt)
+	scene.update(dt)
 end
 
 lf.draw = function()
-	scene:draw()
+	scene.draw()
 end
