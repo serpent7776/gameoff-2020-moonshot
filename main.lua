@@ -1,7 +1,6 @@
 local lf = require("lib/love-frame")
 
 local W, H, W_2, H_2
-local moon_top_h
 local scene
 
 local moon_scene = {}
@@ -40,13 +39,13 @@ end
    ]]
 
 moon_scene.prepare_data = function(self)
-	moon_top_h = H * 0.1
+	self.moon_top_h = H * 0.1
 	self.moon_vertices = {}
 	local max_i = 10
 	for i = 0, max_i do
 		local c = max_i / 2
 		local x = (i - c) / c * W_2
-		local y = sinc(0, moon_top_h, i / c)
+		local y = sinc(0, self.moon_top_h, i / c)
 		self.moon_vertices[i * 2 + 1] = x
 		self.moon_vertices[i * 2 + 2] = y
 	end
@@ -75,7 +74,7 @@ moon_scene.draw = function(self)
 	love.graphics.setColor(0.86, 0.86, 0.86)
 	love.graphics.polygon('fill', self.moon_vertices)
 	love.graphics.setColor(0.1, 0, 0.86)
-	love.graphics.rectangle('fill', -10, moon_top_h*0.9, 20, moon_top_h*0.5)
+	love.graphics.rectangle('fill', -10, self.moon_top_h*0.9, 20, self.moon_top_h*0.5)
 end
 
 --[[
