@@ -36,6 +36,25 @@ local function table_copy(src)
 	return dst
 end
 
+local function deferred(timeout, reset_proc, func)
+	return {
+		initial_timeout = timeout,
+		timeout = timeout,
+		update = function(self, dt)
+			self.timeout = self.timeout - dt
+			if self.timeout <= 0 then
+				func()
+				reset_proc(self)
+			end
+		end,
+	}
+end
+
+local function continue(deferred)
+	deferred.timeout = deferred.timeout + deferred.initial_timeout
+	return deferred
+end
+
 local function switch_to(new_scene)
 	if scene and scene.unload then
 		scene.unload()
@@ -123,7 +142,7 @@ launched_scene.load = function()
 		image = lf.get_texture('rocket.png'),
 	}
 	launched_scene.objects = {}
-	launched_scene.spawn_meteorite()
+	launched_scene.spawner = deferred(1, continue, launched_scene.spawn_meteorite)
 end
 
 launched_scene.keypressed = function(key, scancode, is_repeat)
@@ -156,6 +175,8 @@ launched_scene.update = function(dt)
 	end
 	rocket.vy = clamp(rocket.vy + rocket.ay * dt, -vmax, vmax)
 	rocket.y = rocket.y + rocket.vy * dt
+	-- spawner
+	launched_scene.spawner:update(dt)
 end
 
 launched_scene.draw = function()
