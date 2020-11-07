@@ -5,6 +5,11 @@ local moon_top_h
 local scene
 
 local moon_scene = {}
+local launched_scene = {}
+
+--[[
+   [ utils
+   ]]
 
 local function lerp(x, y, a)
 	return y * a + x * (1 - a)
@@ -29,6 +34,10 @@ local function switch_to(new_scene)
 	scene = table_copy(new_scene)
 	scene:load()
 end
+
+--[[
+   [ moon_scene
+   ]]
 
 moon_scene.prepare_data = function(self)
 	moon_top_h = H * 0.1
@@ -64,6 +73,28 @@ moon_scene.draw = function(self)
 	love.graphics.rectangle('fill', -10, moon_top_h*0.9, 20, moon_top_h*0.5)
 end
 
+--[[
+   [ launched_scene
+   ]]
+
+launched_scene.load = function(self)
+end
+
+launched_scene.keypressed = function(self, key, scancode, is_repeat)
+end
+
+launched_scene.keyreleased = function(self, key, scancode)
+end
+
+launched_scene.update = function(self, dt)
+end
+
+launched_scene.draw = function(self)
+end
+
+--[[
+   [ love/lf funs
+   ]]
 
 lf.init = function()
 	W, H = 800, 600
