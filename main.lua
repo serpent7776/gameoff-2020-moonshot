@@ -33,6 +33,7 @@ local function spriteify(name, obj)
 	obj.image = tex
 	obj.width = tex:getWidth()
 	obj.height = tex:getHeight()
+	obj.width_2 = obj.width / 2
 	obj.height_2 = obj.height / 2
 	return obj
 end
@@ -55,6 +56,26 @@ local function deferred(timeout, reset_proc, func)
 				func()
 				reset_proc(self)
 			end
+		end,
+	}
+end
+
+local function decayed(initial, half_life)
+	return {
+		initial = initial,
+		value = initial,
+		time = 0,
+		half_life = half_life,
+		update = function(self, dt)
+			self.time = self.time + dt
+		end,
+		get = function(self)
+			return self.initial * math.exp(-self.time / self.half_life)
+		end,
+		reset = function(self, new_initial)
+			self.initial = new_initial
+			self.value = new_initial
+			self.time = 0
 		end,
 	}
 end
@@ -133,6 +154,19 @@ launched_scene.spawn_meteorite = function()
 	}))
 end
 
+launched_scene.collected = function(obj)
+	local rocket_x = launched_scene.rocket.x
+	local rocket_y = launched_scene.rocket.y
+	local x = math.abs(obj.x - rocket_x) < obj.width_2 + launched_scene.rocket.width_2
+	local y = math.abs(obj.y - rocket_y) < obj.height_2 + launched_scene.rocket.height_2
+	return x and y
+end
+
+launched_scene.hit = function()
+	launched_scene.rocket.thrust = false
+	launched_scene.rocket.hit = true
+end
+
 launched_scene.load = function()
 	-- viewport origin is at centre, right and goes left and up
 	lf.setup_viewport(-W, -H)
@@ -141,6 +175,7 @@ launched_scene.load = function()
 		y = 0,
 		vy = 0,
 		ay = 0,
+		dragy = decayed(0, 0.5)
 	})
 	launched_scene.objects = {}
 	launched_scene.spawner = deferred(1, continue, launched_scene.spawn_meteorite)
@@ -160,22 +195,33 @@ end
 
 launched_scene.update = function(dt)
 	-- objects
-	for idx, obj in ipairs(launched_scene.objects) do
+	for _, obj in ipairs(launched_scene.objects) do
 		obj.x = obj.x - obj.vx * dt
-		print(obj.x)
+	end
+	-- colissions
+	for _, obj in ipairs(launched_scene.objects) do
+		if launched_scene.collected(obj) then
+			launched_scene.hit()
+		end
 	end
 	-- rocket
 	local rocket = launched_scene.rocket
 	local g = 300
 	local a = 300
+	local drag = 1200
 	local vmax = 210
 	if rocket.thrust then
 		rocket.ay = a
 	else
 		rocket.ay = -g
 	end
-	rocket.vy = clamp(rocket.vy + rocket.ay * dt, -vmax, vmax)
+	if rocket.hit then
+		rocket.hit = false
+		rocket.dragy:reset(-drag)
+	end
+	rocket.vy = clamp(rocket.vy + (rocket.ay + rocket.dragy:get()) * dt, -vmax, vmax)
 	rocket.y = rocket.y + rocket.vy * dt
+	rocket.dragy:update(dt)
 	-- spawner
 	launched_scene.spawner:update(dt)
 end
