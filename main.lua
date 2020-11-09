@@ -218,6 +218,7 @@ launched_scene.update = function(dt)
 	if rocket.hit then
 		rocket.hit = false
 		rocket.dragy:reset(-drag)
+		rocket.ay = 0
 	end
 	rocket.vy = clamp(rocket.vy + (rocket.ay + rocket.dragy:get()) * dt, -vmax, vmax)
 	rocket.y = rocket.y + rocket.vy * dt
