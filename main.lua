@@ -175,7 +175,7 @@ launched_scene.load = function()
 		y = 0,
 		vy = 0,
 		ay = 0,
-		dragy = decayed(0, 0.5)
+		dragy = decayed(0, 0.1)
 	})
 	launched_scene.objects = {}
 	launched_scene.spawner = deferred(1, continue, launched_scene.spawn_meteorite)
@@ -208,7 +208,7 @@ launched_scene.update = function(dt)
 	local rocket = launched_scene.rocket
 	local g = 300
 	local a = 300
-	local drag = 1200
+	local drag = 5000
 	local vmax = 210
 	if rocket.thrust then
 		rocket.ay = a
