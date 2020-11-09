@@ -175,7 +175,9 @@ launched_scene.load = function()
 		y = 0,
 		vy = 0,
 		ay = 0,
-		dragy = decayed(0, 0.1)
+		dragy = decayed(0, 0.1),
+		fuel_max = 100,
+		fuel = 100,
 	})
 	launched_scene.objects = {}
 	launched_scene.spawner = deferred(1, continue, launched_scene.spawn_meteorite)
@@ -210,8 +212,10 @@ launched_scene.update = function(dt)
 	local a = 300
 	local drag = 5000
 	local vmax = 210
-	if rocket.thrust then
+	local burn_rate = 20
+	if rocket.thrust and rocket.fuel > 0 then
 		rocket.ay = a
+		rocket.fuel = math.max(0, rocket.fuel - burn_rate * dt)
 	else
 		rocket.ay = -g
 	end
@@ -237,6 +241,9 @@ launched_scene.draw = function()
 	-- rocket
 	local rocket = launched_scene.rocket
 	love.graphics.draw(rocket.image, rocket.x, rocket.y, 0, 1, 1, 0, rocket.height_2)
+	love.graphics.setColor(0, 1, 0)
+	local fuel_pc = rocket.fuel / rocket.fuel_max
+	love.graphics.rectangle('fill', 10, H_2-10, (W-20)*fuel_pc, -20)
 end
 
 --[[
