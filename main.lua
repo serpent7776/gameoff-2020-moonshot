@@ -242,8 +242,11 @@ launched_scene.draw = function()
 	-- rocket
 	local rocket = launched_scene.rocket
 	love.graphics.draw(rocket.image, rocket.x, rocket.y, 0, 1, 1, 0, rocket.height_2)
-	love.graphics.setColor(0, 1, 0)
+	-- fuel bar
 	local fuel_pc = rocket.fuel / rocket.fuel_max
+	local r = lerp(2, 0, fuel_pc)
+	local g = lerp(0, 2, fuel_pc)
+	love.graphics.setColor(r, g, 0)
 	love.graphics.rectangle('fill', 10, H_2-10, (W-20)*fuel_pc, -20)
 end
 
