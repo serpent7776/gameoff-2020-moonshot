@@ -257,6 +257,7 @@ end
 lf.init = function()
 	W, H = 800, 600
 	W_2, H_2 = W / 2, H / 2
+	math.randomseed(os.time())
 	switch_to(moon_scene)
 end
 
