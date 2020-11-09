@@ -171,7 +171,7 @@ launched_scene.load = function()
 	-- viewport origin is at centre, right and goes left and up
 	lf.setup_viewport(-W, -H)
 	launched_scene.rocket = spriteify('rocket.png', {
-		x = 30,
+		x = 100,
 		y = 0,
 		vy = 0,
 		ay = 0,
@@ -241,7 +241,7 @@ launched_scene.draw = function()
 	end
 	-- rocket
 	local rocket = launched_scene.rocket
-	love.graphics.draw(rocket.image, rocket.x, rocket.y, 0, 1, 1, 0, rocket.height_2)
+	love.graphics.draw(rocket.image, rocket.x, rocket.y, 0, 1, 1, rocket.width, rocket.height_2)
 	-- fuel bar
 	local fuel_pc = rocket.fuel / rocket.fuel_max
 	local r = lerp(2, 0, fuel_pc)
