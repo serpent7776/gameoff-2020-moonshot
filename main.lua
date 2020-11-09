@@ -224,7 +224,8 @@ launched_scene.update = function(dt)
 		rocket.dragy:reset(-drag)
 		rocket.ay = 0
 	end
-	rocket.vy = clamp(rocket.vy + (rocket.ay + rocket.dragy:get()) * dt, -vmax, vmax)
+	rocket.vy = clamp(rocket.vy + rocket.ay * dt, -vmax, vmax)
+	rocket.vy = rocket.vy + rocket.dragy:get() * dt
 	rocket.y = rocket.y + rocket.vy * dt
 	rocket.dragy:update(dt)
 	-- spawner
