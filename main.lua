@@ -208,6 +208,7 @@ launched_scene.update = function(dt)
 	local thrust_accel = 250
 	local f_static = 20
 	local f_dynamic = 0.9
+	local f_hit = 0.666
 	local burn_rate_active = 16
 	local burn_rate_passive = 4
 	rocket.fuel = math.max(0, rocket.fuel - burn_rate_passive * dt)
@@ -221,6 +222,7 @@ launched_scene.update = function(dt)
 	if rocket.hit then
 		rocket.hit = false
 		rocket.ay = math.min(0, rocket.ay)
+		rocket.vx = rocket.vx - math.max(0, rocket.vx * (1 - f_hit))
 	end
 	rocket.x = rocket.x + rocket.vx * dt
 	rocket.y = rocket.y + rocket.vy * dt
