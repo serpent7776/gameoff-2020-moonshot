@@ -5,7 +5,8 @@ LOVEFILE=moonshot.love
 all: dist play
 
 dist:
-	git ls-files *.lua lib assets | xargs zip -r ${LOVEFILE}
+	git ls-files *.lua assets | xargs zip -r ${LOVEFILE}
+	zip -r ${LOVEFILE} lib/love-frame/*
 
 play:
 	love ${LOVEFILE}
