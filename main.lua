@@ -180,7 +180,7 @@ launched_scene.load = function()
 		fuel = 100,
 	})
 	launched_scene.objects = {}
-	launched_scene.spawner = deferred(1, continue, launched_scene.spawn_meteorite)
+	launched_scene.spawner = deferred(0.6, continue, launched_scene.spawn_meteorite)
 end
 
 launched_scene.keypressed = function(key, scancode, is_repeat)
@@ -230,9 +230,11 @@ launched_scene.update = function(dt)
 	rocket.vx = rocket.vx - math.max(0, rocket.vx * (1 - f_dynamic) * dt)
 	rocket.vx = math.max(0, rocket.vx - f_static * dt)
 	-- colissions
-	for _, obj in ipairs(launched_scene.objects) do
+	for idx, obj in ipairs(launched_scene.objects) do
 		if launched_scene.collected(obj) then
 			launched_scene.hit()
+			table.remove(launched_scene.objects, idx)
+			break
 		end
 	end
 	-- spawner
