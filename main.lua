@@ -173,7 +173,7 @@ launched_scene.load = function()
 		offset_x = 100,
 		x = 0,
 		y = H_2,
-		vx = 350,
+		vx = 1200,
 		vy = 0,
 		ay = 0,
 		fuel_max = 100,
@@ -205,6 +205,8 @@ launched_scene.update = function(dt)
 	local g = 300
 	local a = 300
 	local vmax = 210
+	local f_static = 20
+	local f_dynamic = 0.9
 	local burn_rate_active = 16
 	local burn_rate_passive = 4
 	rocket.fuel = math.max(0, rocket.fuel - burn_rate_passive * dt)
@@ -221,6 +223,8 @@ launched_scene.update = function(dt)
 	rocket.x = rocket.x + rocket.vx * dt
 	rocket.y = rocket.y + rocket.vy * dt
 	rocket.vy = clamp(rocket.vy + rocket.ay * dt, -vmax, vmax)
+	rocket.vx = rocket.vx - math.max(0, rocket.vx * (1 - f_dynamic) * dt)
+	rocket.vx = math.max(0, rocket.vx - f_static * dt)
 	-- colissions
 	for _, obj in ipairs(launched_scene.objects) do
 		if launched_scene.collected(obj) then
@@ -253,8 +257,8 @@ launched_scene.draw = function()
 	love.graphics.rectangle('fill', 10, H_2-10, (W-20)*fuel_pc, -20)
 	-- meters
 	love.graphics.setColor(1, 1, 1)
-	love.graphics.print(rocket.x, 10, -H_2 + 25, 0, 1, -1)
-	love.graphics.print(rocket.vx, 100, -H_2 + 25, 0, 1, -1)
+	love.graphics.print(string.format("%.2f", rocket.x), 10, -H_2 + 25, 0, 1, -1)
+	love.graphics.print(string.format("%.2f", rocket.vx), 200, -H_2 + 25, 0, 1, -1)
 end
 
 --[[
