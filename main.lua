@@ -213,10 +213,12 @@ launched_scene.update = function(dt)
 	local a = 300
 	local drag = 5000
 	local vmax = 210
-	local burn_rate = 20
+	local burn_rate_active = 16
+	local burn_rate_passive = 4
+	rocket.fuel = math.max(0, rocket.fuel - burn_rate_passive * dt)
 	if rocket.thrust and rocket.fuel > 0 then
 		rocket.ay = a
-		rocket.fuel = math.max(0, rocket.fuel - burn_rate * dt)
+		rocket.fuel = math.max(0, rocket.fuel - burn_rate_active * dt)
 	else
 		rocket.ay = -g
 	end
