@@ -204,7 +204,7 @@ launched_scene.update = function(dt)
 	local rocket = launched_scene.rocket
 	local g = 300
 	local a = 300
-	local vmax = 210
+	local vymax = 210
 	local f_static = 20
 	local f_dynamic = 0.9
 	local burn_rate_active = 16
@@ -222,7 +222,7 @@ launched_scene.update = function(dt)
 	end
 	rocket.x = rocket.x + rocket.vx * dt
 	rocket.y = rocket.y + rocket.vy * dt
-	rocket.vy = clamp(rocket.vy + rocket.ay * dt, -vmax, vmax)
+	rocket.vy = clamp(rocket.vy + rocket.ay * dt, -vymax, vymax)
 	rocket.vx = rocket.vx - math.max(0, rocket.vx * (1 - f_dynamic) * dt)
 	rocket.vx = math.max(0, rocket.vx - f_static * dt)
 	-- colissions
