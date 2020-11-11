@@ -166,9 +166,7 @@ launched_scene.hit = function()
 	launched_scene.rocket.hit = true
 end
 
-launched_scene.load = function()
-	-- viewport origin is at left, bottom and goes right and up
-	lf.setup_viewport(W, -H)
+launched_scene.reset = function()
 	launched_scene.rocket = spriteify('rocket.png', {
 		offset_x = 100,
 		x = 0,
@@ -183,6 +181,12 @@ launched_scene.load = function()
 	launched_scene.spawner = deferred(0.6, continue, launched_scene.spawn_meteorite)
 end
 
+launched_scene.load = function()
+	-- viewport origin is at left, bottom and goes right and up
+	lf.setup_viewport(W, -H)
+	launched_scene.reset()
+end
+
 launched_scene.keypressed = function(key, scancode, is_repeat)
 	if key == 'space' then
 		launched_scene.rocket.thrust = true
@@ -192,6 +196,8 @@ end
 launched_scene.keyreleased = function(key, scancode)
 	if key == 'space' then
 		launched_scene.rocket.thrust = false
+	elseif key == 'r' then
+		launched_scene.reset()
 	end
 end
 
