@@ -167,12 +167,12 @@ launched_scene.hit = function()
 end
 
 launched_scene.load = function()
-	-- viewport origin is at centre, left and goes right and up
+	-- viewport origin is at left, bottom and goes right and up
 	lf.setup_viewport(W, -H)
 	launched_scene.rocket = spriteify('rocket.png', {
 		offset_x = 100,
 		x = 0,
-		y = 0,
+		y = H_2,
 		vx = 350,
 		vy = 0,
 		ay = 0,
@@ -238,7 +238,7 @@ launched_scene.draw = function()
 	local rocket = launched_scene.rocket
 	love.graphics.translate(0, -H_2)
 	love.graphics.push()
-	love.graphics.translate(-rocket.x + rocket.offset_x, 0)
+	love.graphics.translate(-rocket.x + rocket.offset_x, -rocket.y)
 	love.graphics.setColor(1, 1, 1)
 	-- objects
 	for _, obj in ipairs(launched_scene.objects) do
