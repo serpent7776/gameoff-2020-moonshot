@@ -141,16 +141,15 @@ end
    ]]
 
 launched_scene.spawn = function(obj)
-	local y = (math.random() * 2 - 1) * H_2
-	obj.x = W
-	obj.y = y
+	obj.x = W + launched_scene.rocket.x
+	obj.y = (math.random() * 2 - 1) * H_2
 	table.insert(launched_scene.objects, obj)
 	return obj
 end
 
 launched_scene.spawn_meteorite = function()
 	return spriteify('asteroid.png', launched_scene.spawn({
-		vx = 250,
+		vx = 50,
 	}))
 end
 
@@ -171,8 +170,10 @@ launched_scene.load = function()
 	-- viewport origin is at centre, right and goes left and up
 	lf.setup_viewport(-W, -H)
 	launched_scene.rocket = spriteify('rocket.png', {
-		x = 100,
+		offset_x = 100,
+		x = 0,
 		y = 0,
+		vx = 350,
 		vy = 0,
 		ay = 0,
 		dragy = decayed(0, 0.1),
@@ -224,6 +225,7 @@ launched_scene.update = function(dt)
 		rocket.dragy:reset(-drag)
 		rocket.ay = 0
 	end
+	rocket.x = rocket.x + rocket.vx * dt
 	rocket.vy = clamp(rocket.vy + rocket.ay * dt, -vmax, vmax)
 	rocket.vy = rocket.vy + rocket.dragy:get() * dt
 	rocket.y = rocket.y + rocket.vy * dt
@@ -233,21 +235,28 @@ launched_scene.update = function(dt)
 end
 
 launched_scene.draw = function()
+	local rocket = launched_scene.rocket
 	love.graphics.translate(-W, -H_2)
+	love.graphics.push()
+	love.graphics.translate(-rocket.x + rocket.offset_x, 0)
 	love.graphics.setColor(1, 1, 1)
 	-- objects
 	for _, obj in ipairs(launched_scene.objects) do
 		love.graphics.draw(obj.image, obj.x, obj.y, 0, 1, 1, obj.width, obj.height_2)
 	end
 	-- rocket
-	local rocket = launched_scene.rocket
 	love.graphics.draw(rocket.image, rocket.x, rocket.y, 0, 1, 1, rocket.width, rocket.height_2)
+	love.graphics.pop()
+	-- ui
 	-- fuel bar
 	local fuel_pc = rocket.fuel / rocket.fuel_max
 	local r = lerp(2, 0, fuel_pc)
 	local g = lerp(0, 2, fuel_pc)
 	love.graphics.setColor(r, g, 0)
 	love.graphics.rectangle('fill', 10, H_2-10, (W-20)*fuel_pc, -20)
+	-- meters
+	love.graphics.setColor(1, 1, 1)
+	love.graphics.print(rocket.x, 100, -H_2 + 25, 0, -1, -1)
 end
 
 --[[
