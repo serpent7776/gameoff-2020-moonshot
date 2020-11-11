@@ -237,6 +237,10 @@ launched_scene.update = function(dt)
 	end
 	-- spawner
 	launched_scene.spawner:update(dt)
+	-- remove objects
+	if table.maxn(launched_scene.objects) > 0 and launched_scene.objects[1].x < rocket.x - rocket.width - rocket.offset_x then
+		table.remove(launched_scene.objects, 1)
+	end
 end
 
 launched_scene.draw = function()
