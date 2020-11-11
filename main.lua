@@ -176,7 +176,6 @@ launched_scene.load = function()
 		vx = 350,
 		vy = 0,
 		ay = 0,
-		dragy = decayed(0, 0.1),
 		fuel_max = 100,
 		fuel = 100,
 	})
@@ -211,7 +210,6 @@ launched_scene.update = function(dt)
 	local rocket = launched_scene.rocket
 	local g = 300
 	local a = 300
-	local drag = 5000
 	local vmax = 210
 	local burn_rate_active = 16
 	local burn_rate_passive = 4
@@ -224,14 +222,11 @@ launched_scene.update = function(dt)
 	end
 	if rocket.hit then
 		rocket.hit = false
-		rocket.dragy:reset(-drag)
-		rocket.ay = 0
+		rocket.ay = math.min(0, rocket.ay)
 	end
 	rocket.x = rocket.x + rocket.vx * dt
-	rocket.vy = clamp(rocket.vy + rocket.ay * dt, -vmax, vmax)
-	rocket.vy = rocket.vy + rocket.dragy:get() * dt
 	rocket.y = rocket.y + rocket.vy * dt
-	rocket.dragy:update(dt)
+	rocket.vy = clamp(rocket.vy + rocket.ay * dt, -vmax, vmax)
 	-- spawner
 	launched_scene.spawner:update(dt)
 end
@@ -259,6 +254,7 @@ launched_scene.draw = function()
 	-- meters
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.print(rocket.x, 10, -H_2 + 25, 0, 1, -1)
+	love.graphics.print(rocket.vx, 100, -H_2 + 25, 0, 1, -1)
 end
 
 --[[
