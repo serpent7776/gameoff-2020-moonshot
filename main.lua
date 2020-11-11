@@ -200,12 +200,6 @@ launched_scene.update = function(dt)
 	for _, obj in ipairs(launched_scene.objects) do
 		obj.x = obj.x - obj.vx * dt
 	end
-	-- colissions
-	for _, obj in ipairs(launched_scene.objects) do
-		if launched_scene.collected(obj) then
-			launched_scene.hit()
-		end
-	end
 	-- rocket
 	local rocket = launched_scene.rocket
 	local g = 300
@@ -227,6 +221,12 @@ launched_scene.update = function(dt)
 	rocket.x = rocket.x + rocket.vx * dt
 	rocket.y = rocket.y + rocket.vy * dt
 	rocket.vy = clamp(rocket.vy + rocket.ay * dt, -vmax, vmax)
+	-- colissions
+	for _, obj in ipairs(launched_scene.objects) do
+		if launched_scene.collected(obj) then
+			launched_scene.hit()
+		end
+	end
 	-- spawner
 	launched_scene.spawner:update(dt)
 end
