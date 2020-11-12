@@ -177,6 +177,7 @@ launched_scene.reset = function()
 		fuel_max = 100,
 		fuel = 100,
 	})
+	launched_scene.rocket.offset_x = launched_scene.rocket.width + 10
 	launched_scene.objects = {}
 	launched_scene.spawner = deferred(0.6, continue, launched_scene.spawn_meteorite)
 end
