@@ -142,7 +142,7 @@ end
 
 launched_scene.spawn = function(obj)
 	obj.x = W + launched_scene.rocket.x
-	obj.y = (math.random() * 2 - 1) * H_2
+	obj.y = 50 * love.math.random(1, 10)
 	table.insert(launched_scene.objects, obj)
 	return obj
 end
@@ -254,9 +254,9 @@ end
 
 launched_scene.draw = function()
 	local rocket = launched_scene.rocket
-	love.graphics.translate(0, -H_2)
+	love.graphics.translate(0, -H)
 	love.graphics.push()
-	love.graphics.translate(-rocket.x + rocket.offset_x, -rocket.y)
+	love.graphics.translate(-rocket.x + rocket.offset_x, 0)
 	love.graphics.setColor(1, 1, 1)
 	-- objects
 	for _, obj in ipairs(launched_scene.objects) do
@@ -271,11 +271,11 @@ launched_scene.draw = function()
 	local r = lerp(2, 0, fuel_pc)
 	local g = lerp(0, 2, fuel_pc)
 	love.graphics.setColor(r, g, 0)
-	love.graphics.rectangle('fill', 10, H_2-10, (W-20)*fuel_pc, -20)
+	love.graphics.rectangle('fill', 10, H-10, (W-20)*fuel_pc, -20)
 	-- meters
 	love.graphics.setColor(1, 1, 1)
-	love.graphics.print(string.format("%.2f", rocket.x), 10, -H_2 + 25, 0, 1, -1)
-	love.graphics.print(string.format("%.2f", rocket.vx), 200, -H_2 + 25, 0, 1, -1)
+	love.graphics.print(string.format("%.2f", rocket.x), 10, 25, 0, 1, -1)
+	love.graphics.print(string.format("%.2f", rocket.vx), 200, 25, 0, 1, -1)
 end
 
 --[[
