@@ -50,20 +50,6 @@ local function table_copy(src)
 	return dst
 end
 
-local function deferred(timeout, reset_proc, func)
-	return {
-		initial_timeout = timeout,
-		timeout = timeout,
-		update = function(self, dt)
-			self.timeout = self.timeout - dt
-			if self.timeout <= 0 then
-				func()
-				reset_proc(self)
-			end
-		end,
-	}
-end
-
 local function decayed(initial, half_life)
 	return {
 		initial = initial,
@@ -80,6 +66,31 @@ local function decayed(initial, half_life)
 			self.initial = new_initial
 			self.value = new_initial
 			self.time = 0
+		end,
+	}
+end
+
+local function deferred(timeout, reset_proc, func)
+	return {
+		initial_timeout = timeout,
+		timeout = timeout,
+		update = function(self, dt)
+			self.timeout = self.timeout - dt
+			if self.timeout <= 0 then
+				func()
+				reset_proc(self)
+			end
+		end,
+	}
+end
+
+local function conditional(deferred, predicate)
+	return {
+		parent = deferred,
+		update = function(self, dt)
+			if predicate() then
+				self.parent:update(dt)
+			end
 		end,
 	}
 end
@@ -178,6 +189,14 @@ launched_scene.hit = function()
 	launched_scene.rocket.hit = true
 end
 
+launched_scene.end_complete = function()
+	return launched_scene.rocket.vx <= 0
+end
+
+launched_scene.end_run = function()
+	switch_to(moon_scene)
+end
+
 launched_scene.reset = function()
 	launched_scene.rocket = spriteify('rocket.png', {
 		offset_x = 100,
@@ -193,6 +212,7 @@ launched_scene.reset = function()
 	launched_scene.objects = {}
 	launched_scene.gravity = deferred(0.727, continue, launched_scene.pull_down)
 	launched_scene.spawner = deferred(0.6, continue, launched_scene.spawn_meteorite)
+	launched_scene.run_done = conditional(deferred(1, continue, launched_scene.end_run), launched_scene.end_complete)
 end
 
 launched_scene.load = function()
@@ -254,6 +274,7 @@ launched_scene.update = function(dt)
 	-- deferred objects
 	launched_scene.spawner:update(dt)
 	launched_scene.gravity:update(dt)
+	launched_scene.run_done:update(dt)
 	-- remove objects
 	local has_objects = table.maxn(launched_scene.objects) > 0
 	if has_objects and launched_scene.objects[1].x < rocket.x - rocket.width - rocket.offset_x then
