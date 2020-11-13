@@ -153,8 +153,12 @@ launched_scene.spawn_meteorite = function()
 	}))
 end
 
+launched_scene.move_y = function(obj, dy)
+	obj.y = clamp(obj.y + dy, 50, H - 50)
+end
+
 launched_scene.pull_down = function()
-	launched_scene.rocket.y = launched_scene.rocket.y - 50
+	launched_scene.move_y(launched_scene.rocket, -50)
 end
 
 launched_scene.collected = function(obj)
@@ -226,7 +230,7 @@ launched_scene.update = function(dt)
 	local burn_rate_passive = 4
 	rocket.fuel = math.max(0, rocket.fuel - burn_rate_passive * dt)
 	if rocket.thrust and rocket.fuel > 0 then
-		rocket.y = rocket.y + 50
+		launched_scene.move_y(rocket, 50)
 		rocket.thrust = false
 		rocket.vx = rocket.vx + thrust_accel
 		rocket.fuel = math.max(0, rocket.fuel - burn_rate_active * dt)
