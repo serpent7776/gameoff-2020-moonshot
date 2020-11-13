@@ -186,6 +186,11 @@ launched_scene.load = function()
 	-- viewport origin is at left, bottom and goes right and up
 	lf.setup_viewport(W, -H)
 	launched_scene.reset()
+	lf.play_music('900652_pawles22---Run-2H-Challeng.mp3')
+end
+
+launched_scene.unload = function()
+	lf.stop_music()
 end
 
 launched_scene.keypressed = function(key, scancode, is_repeat)
