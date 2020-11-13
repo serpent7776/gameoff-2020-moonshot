@@ -1,5 +1,9 @@
 local lf = require("lib/love-frame")
 
+local Y_STEP = 50
+local Y_INDEX_MIN = 1
+local Y_INDEX_MAX = 10
+
 local W, H, W_2, H_2
 local scene
 
@@ -142,7 +146,7 @@ end
 
 launched_scene.spawn = function(obj)
 	obj.x = W + launched_scene.rocket.x
-	obj.y = 50 * love.math.random(1, 10)
+	obj.y = Y_STEP * love.math.random(Y_INDEX_MIN, Y_INDEX_MAX)
 	table.insert(launched_scene.objects, obj)
 	return obj
 end
@@ -154,11 +158,11 @@ launched_scene.spawn_meteorite = function()
 end
 
 launched_scene.move_y = function(obj, dy)
-	obj.y = clamp(obj.y + dy, 50, H - 50)
+	obj.y = clamp(obj.y + dy, Y_STEP * Y_INDEX_MIN, Y_STEP * Y_INDEX_MAX)
 end
 
 launched_scene.pull_down = function()
-	launched_scene.move_y(launched_scene.rocket, -50)
+	launched_scene.move_y(launched_scene.rocket, -Y_STEP)
 end
 
 launched_scene.collected = function(obj)
@@ -230,7 +234,7 @@ launched_scene.update = function(dt)
 	local burn_rate_passive = 4
 	rocket.fuel = math.max(0, rocket.fuel - burn_rate_passive * dt)
 	if rocket.thrust and rocket.fuel > 0 then
-		launched_scene.move_y(rocket, 50)
+		launched_scene.move_y(rocket, Y_STEP)
 		rocket.thrust = false
 		rocket.vx = rocket.vx + thrust_accel
 		rocket.fuel = math.max(0, rocket.fuel - burn_rate_active * dt)
