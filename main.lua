@@ -153,6 +153,10 @@ launched_scene.spawn_meteorite = function()
 	}))
 end
 
+launched_scene.pull_down = function()
+	launched_scene.rocket.y = launched_scene.rocket.y - 50
+end
+
 launched_scene.collected = function(obj)
 	local rocket_x = launched_scene.rocket.x
 	local rocket_y = launched_scene.rocket.y
@@ -170,15 +174,15 @@ launched_scene.reset = function()
 	launched_scene.rocket = spriteify('rocket.png', {
 		offset_x = 100,
 		x = 0,
-		y = H_2,
+		y = 200,
 		vx = 1200,
-		vy = 0,
 		ay = 0,
 		fuel_max = 100,
 		fuel = 100,
 	})
 	launched_scene.rocket.offset_x = launched_scene.rocket.width + 10
 	launched_scene.objects = {}
+	launched_scene.gravity = deferred(0.727, continue, launched_scene.pull_down)
 	launched_scene.spawner = deferred(0.6, continue, launched_scene.spawn_meteorite)
 end
 
@@ -214,10 +218,7 @@ launched_scene.update = function(dt)
 	end
 	-- rocket
 	local rocket = launched_scene.rocket
-	local g = 300
-	local a = 300
-	local vymax = 210
-	local thrust_accel = 250
+	local thrust_accel = 100
 	local f_static = 20
 	local f_dynamic = 0.9
 	local f_hit = 0.666
@@ -225,11 +226,10 @@ launched_scene.update = function(dt)
 	local burn_rate_passive = 4
 	rocket.fuel = math.max(0, rocket.fuel - burn_rate_passive * dt)
 	if rocket.thrust and rocket.fuel > 0 then
-		rocket.vx = rocket.vx + thrust_accel * dt
-		rocket.ay = a
+		rocket.y = rocket.y + 50
+		rocket.thrust = false
+		rocket.vx = rocket.vx + thrust_accel
 		rocket.fuel = math.max(0, rocket.fuel - burn_rate_active * dt)
-	else
-		rocket.ay = -g
 	end
 	if rocket.hit then
 		rocket.hit = false
@@ -237,8 +237,6 @@ launched_scene.update = function(dt)
 		rocket.vx = rocket.vx - math.max(0, rocket.vx * (1 - f_hit))
 	end
 	rocket.x = rocket.x + rocket.vx * dt
-	rocket.y = rocket.y + rocket.vy * dt
-	rocket.vy = clamp(rocket.vy + rocket.ay * dt, -vymax, vymax)
 	rocket.vx = rocket.vx - math.max(0, rocket.vx * (1 - f_dynamic) * dt)
 	rocket.vx = math.max(0, rocket.vx - f_static * dt)
 	-- colissions
@@ -249,8 +247,9 @@ launched_scene.update = function(dt)
 			break
 		end
 	end
-	-- spawner
+	-- deferred objects
 	launched_scene.spawner:update(dt)
+	launched_scene.gravity:update(dt)
 	-- remove objects
 	if table.maxn(launched_scene.objects) > 0 and launched_scene.objects[1].x < rocket.x - rocket.width - rocket.offset_x then
 		table.remove(launched_scene.objects, 1)
