@@ -156,7 +156,8 @@ end
    ]]
 
 launched_scene.spawn = function(obj)
-	obj.x = W + launched_scene.rocket.x
+	local SPAWN_OFSSET = W
+	obj.x = W + launched_scene.rocket.x + SPAWN_OFSSET
 	obj.y = Y_STEP * love.math.random(Y_INDEX_MIN, Y_INDEX_MAX)
 	table.insert(launched_scene.objects, obj)
 	return obj
