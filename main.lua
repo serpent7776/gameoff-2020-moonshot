@@ -177,6 +177,7 @@ end
 launched_scene.spawn_meteorite = function()
 	return spriteify('asteroid.png', launched_scene.spawn({
 		vx = 50,
+		on_hit = launched_scene.asteroid_hit
 	}))
 end
 
@@ -196,7 +197,7 @@ launched_scene.collected = function(obj)
 	return x and y
 end
 
-launched_scene.hit = function()
+launched_scene.asteroid_hit = function()
 	launched_scene.rocket.hit = true
 end
 
@@ -302,7 +303,7 @@ launched_scene.update = function(dt)
 	-- colissions
 	for idx, obj in ipairs(launched_scene.objects) do
 		if launched_scene.collected(obj) then
-			launched_scene.hit()
+			obj.on_hit()
 			table.remove(launched_scene.objects, idx)
 			break
 		end
