@@ -33,6 +33,16 @@ local function clamp(x, min, max)
 	end
 end
 
+local function sgn(x)
+	if x > 0 then
+		return 1
+	elseif x < 0 then
+		return -1
+	else
+		return 0
+	end
+end
+
 local function spriteify(name, obj)
 	local tex = lf.get_texture(name)
 	obj.image = tex
@@ -174,8 +184,8 @@ launched_scene.move_y = function(obj, dy)
 	obj.y = clamp(obj.y + dy, Y_STEP * Y_INDEX_MIN, Y_STEP * Y_INDEX_MAX)
 end
 
-launched_scene.pull_down = function()
-	launched_scene.move_y(launched_scene.rocket, -Y_STEP)
+launched_scene.continue_rocket_movement = function()
+	launched_scene.move_y(launched_scene.rocket, Y_STEP * launched_scene.rocket.dy)
 end
 
 launched_scene.collected = function(obj)
@@ -187,11 +197,10 @@ launched_scene.collected = function(obj)
 end
 
 launched_scene.hit = function()
-	launched_scene.rocket.thrust = false
 	launched_scene.rocket.hit = true
 end
 
-launched_scene.end_complete = function()
+launched_scene.run_complete = function()
 	return launched_scene.rocket.vx <= 0
 end
 
@@ -204,17 +213,20 @@ launched_scene.reset = function()
 		offset_x = 100,
 		x = 0,
 		y = 200,
+		dy = -1,
 		vx = 1200,
 		ax = 100,
 		gx = -250,
 		fuel_max = 100,
 		fuel = 100,
+		hit = false,
+		thrust = false,
 	})
 	launched_scene.rocket.offset_x = launched_scene.rocket.width + 10
 	launched_scene.objects = {}
-	launched_scene.gravity = deferred(0.727, continue, launched_scene.pull_down)
+	launched_scene.rocket_mover = deferred(0.727, continue, launched_scene.continue_rocket_movement)
 	launched_scene.spawner = deferred(0.6, continue, launched_scene.spawn_meteorite)
-	launched_scene.run_done = conditional(deferred(1, continue, launched_scene.end_run), launched_scene.end_complete)
+	launched_scene.run_done = conditional(deferred(1, continue, launched_scene.end_run), launched_scene.run_complete)
 end
 
 launched_scene.load = function()
@@ -236,9 +248,7 @@ launched_scene.keypressed = function(key, scancode, is_repeat)
 end
 
 launched_scene.keyreleased = function(key, scancode)
-	if key == 'space' then
-		launched_scene.rocket.thrust = false
-	elseif key == 'r' then
+	if key == 'r' then
 		launched_scene.reset()
 	end
 end
@@ -256,9 +266,10 @@ launched_scene.update = function(dt)
 	local burn_rate_passive = 4
 	rocket.fuel = math.max(0, rocket.fuel - burn_rate_passive * dt)
 	if rocket.thrust and rocket.fuel > 0 then
-		launched_scene.move_y(rocket, Y_STEP)
 		rocket.thrust = false
 		rocket.fuel = math.max(0, rocket.fuel - burn_rate_active * dt)
+		rocket.dy = -sgn(rocket.dy)
+		launched_scene.move_y(rocket, Y_STEP * rocket.dy)
 	end
 	if rocket.hit then
 		rocket.hit = false
@@ -277,7 +288,7 @@ launched_scene.update = function(dt)
 	end
 	-- deferred objects
 	launched_scene.spawner:update(dt)
-	launched_scene.gravity:update(dt)
+	launched_scene.rocket_mover:update(dt)
 	launched_scene.run_done:update(dt)
 	-- remove objects
 	local has_objects = table.maxn(launched_scene.objects) > 0
