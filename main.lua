@@ -339,7 +339,6 @@ launched_scene.update = function(dt)
 		rocket.switch_dir = false
 		rocket.fuel = math.max(0, rocket.fuel - burn_rate_active * dt)
 		launched_scene.switch_dir(rocket)
-		launched_scene.move_y(rocket, Y_STEP * rocket.dy)
 	end
 	if rocket.fuel > 0 then
 		launched_scene.bounce(rocket)
