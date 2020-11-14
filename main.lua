@@ -4,6 +4,7 @@ local PI_2 = math.pi / 2
 local Y_STEP = 50
 local Y_INDEX_MIN = 1
 local Y_INDEX_MAX = 10
+local SPAWN_DISTANCE
 
 local W, H, W_2, H_2
 local cash
@@ -168,8 +169,7 @@ end
    ]]
 
 launched_scene.spawn = function(obj)
-	local SPAWN_OFSSET = W
-	obj.x = W + launched_scene.rocket.x + SPAWN_OFSSET
+	obj.x = W + launched_scene.rocket.x + SPAWN_DISTANCE
 	obj.y = Y_STEP * love.math.random(Y_INDEX_MIN, Y_INDEX_MAX)
 	table.insert(launched_scene.objects, obj)
 	return obj
@@ -380,8 +380,8 @@ launched_scene.draw = function()
 	local phi = launched_scene.game_time * PI_2
 	for _, obj in ipairs(launched_scene.objects) do
 		if obj.x > rocket.x + W then
-			local dx = obj.x - rocket.x - W
-			local scale = clamp(1 - dx / W, 0, 0.5)
+			local dx = obj.x - (rocket.x - rocket.width) - W
+			local scale = clamp(1 - dx / SPAWN_DISTANCE, 0, 1) / 2
 			love.graphics.draw(obj.image, rocket.x + W - rocket.width - 50, obj.y, phi, scale, scale, obj.width_2, obj.height_2)
 		else
 			love.graphics.draw(obj.image, obj.x, obj.y, 0, 1, 1, 0, obj.height_2)
@@ -411,6 +411,7 @@ end
 lf.init = function()
 	W, H = 800, 600
 	W_2, H_2 = W / 2, H / 2
+	SPAWN_DISTANCE = W * 4
 	cash = 0
 	switch_to(moon_scene)
 end
