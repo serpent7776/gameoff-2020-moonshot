@@ -200,6 +200,24 @@ launched_scene.hit = function()
 	launched_scene.rocket.hit = true
 end
 
+launched_scene.bounce = function(obj)
+	local bottom = obj.y == Y_INDEX_MIN * Y_STEP
+	local top = obj.y == Y_INDEX_MAX * Y_STEP
+	if bottom then
+		launched_scene.switch_dir_to(obj, 1)
+	elseif top then
+		launched_scene.switch_dir_to(obj, -1)
+	end
+end
+
+launched_scene.switch_dir = function(obj)
+	obj.dy = -sgn(obj.dy)
+end
+
+launched_scene.switch_dir_to = function(obj, dir)
+	obj.dy = sgn(dir)
+end
+
 launched_scene.run_complete = function()
 	return launched_scene.rocket.vx <= 0
 end
@@ -268,8 +286,11 @@ launched_scene.update = function(dt)
 	if rocket.switch_dir and rocket.fuel > 0 then
 		rocket.switch_dir = false
 		rocket.fuel = math.max(0, rocket.fuel - burn_rate_active * dt)
-		rocket.dy = -sgn(rocket.dy)
+		launched_scene.switch_dir(rocket)
 		launched_scene.move_y(rocket, Y_STEP * rocket.dy)
+	end
+	if rocket.fuel > 0 then
+		launched_scene.bounce(rocket)
 	end
 	if rocket.hit then
 		rocket.hit = false
