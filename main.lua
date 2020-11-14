@@ -6,6 +6,7 @@ local Y_INDEX_MIN = 1
 local Y_INDEX_MAX = 10
 
 local W, H, W_2, H_2
+local cash
 local scene
 
 local moon_scene = {}
@@ -177,8 +178,35 @@ end
 launched_scene.spawn_meteorite = function()
 	return spriteify('asteroid.png', launched_scene.spawn({
 		vx = 50,
-		on_hit = launched_scene.asteroid_hit
+		on_hit = launched_scene.meteorite_hit
 	}))
+end
+
+launched_scene.spawn_fuel_meteorite = function()
+	return spriteify('fueloroid.png', launched_scene.spawn({
+		vx = 10,
+		on_hit = launched_scene.fuel_meteorite_hit
+	}))
+end
+
+launched_scene.spawn_cash_meteorite = function()
+	return spriteify('cashoroid.png', launched_scene.spawn({
+		vx = 0,
+		on_hit = launched_scene.cash_meteorite_hit
+	}))
+end
+
+launched_scene.spawn_object = function()
+	local v = love.math.random()
+	if v < 0.95 then
+		launched_scene.spawn_meteorite()
+	else
+		if launched_scene.rocket:fuel_pc() < 0.4 then
+			launched_scene.spawn_fuel_meteorite()
+		else
+			launched_scene.spawn_cash_meteorite()
+		end
+	end
 end
 
 launched_scene.move_y = function(obj, dy)
@@ -197,8 +225,27 @@ launched_scene.collected = function(obj)
 	return x and y
 end
 
-launched_scene.asteroid_hit = function()
+launched_scene.fuel_refill = function()
+	local rocket = launched_scene.rocket
+	rocket.fuel = math.min(rocket.fuel + rocket.fuel_refill, rocket.fuel_max)
+end
+
+launched_scene.earn_cash = function(boost)
+	cash = cash + boost
+end
+
+launched_scene.meteorite_hit = function()
 	launched_scene.rocket.hit = true
+end
+
+launched_scene.fuel_meteorite_hit = function()
+	launched_scene.meteorite_hit()
+	launched_scene.fuel_refill()
+end
+
+launched_scene.cash_meteorite_hit = function()
+	launched_scene.meteorite_hit()
+	launched_scene.earn_cash(100)
 end
 
 launched_scene.bounce = function(obj)
@@ -238,6 +285,7 @@ launched_scene.reset = function()
 		gx = -250,
 		fuel_max = 100,
 		fuel = 100,
+		fuel_refill = 45,
 		hit = false,
 		switch_dir = false,
 		fuel_pc = function(self)
@@ -247,7 +295,7 @@ launched_scene.reset = function()
 	launched_scene.rocket.offset_x = launched_scene.rocket.width + 10
 	launched_scene.objects = {}
 	launched_scene.rocket_mover = deferred(0.36329, continue, launched_scene.continue_rocket_movement)
-	launched_scene.spawner = deferred(0.6, continue, launched_scene.spawn_meteorite)
+	launched_scene.spawner = deferred(0.6, continue, launched_scene.spawn_object)
 	launched_scene.run_done = conditional(deferred(1, continue, launched_scene.end_run), launched_scene.run_complete)
 end
 
@@ -353,6 +401,7 @@ launched_scene.draw = function()
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.print(string.format("%.2f", rocket.x), 10, 25, 0, 1, -1)
 	love.graphics.print(string.format("%.2f", rocket.vx), 200, 25, 0, 1, -1)
+	love.graphics.print(string.format("%.2f", cash), 300, 25, 0, 1, -1)
 end
 
 --[[
@@ -362,6 +411,7 @@ end
 lf.init = function()
 	W, H = 800, 600
 	W_2, H_2 = W / 2, H / 2
+	cash = 0
 	switch_to(moon_scene)
 end
 
