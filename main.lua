@@ -218,10 +218,10 @@ launched_scene.continue_rocket_movement = function()
 end
 
 launched_scene.collected = function(obj)
-	local rocket_x = launched_scene.rocket.x
-	local rocket_y = launched_scene.rocket.y
-	local x = math.abs(obj.x - rocket_x) < obj.width_2 + launched_scene.rocket.width_2
-	local y = math.abs(obj.y - rocket_y) < obj.height_2 + launched_scene.rocket.height_2
+	local rocket = launched_scene.rocket
+	local dx = obj.x - rocket.x
+	local x = dx < 0 and -dx < obj.width + rocket.width
+	local y = math.abs(obj.y - rocket.y) < obj.height_2 + rocket.height_2
 	return x and y
 end
 
@@ -384,7 +384,7 @@ launched_scene.draw = function()
 			local scale = clamp(1 - dx / W, 0, 0.5)
 			love.graphics.draw(obj.image, rocket.x + W - rocket.width - 50, obj.y, phi, scale, scale, obj.width_2, obj.height_2)
 		else
-			love.graphics.draw(obj.image, obj.x, obj.y, 0, 1, 1, obj.width, obj.height_2)
+			love.graphics.draw(obj.image, obj.x, obj.y, 0, 1, 1, 0, obj.height_2)
 		end
 	end
 	-- rocket
