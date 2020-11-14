@@ -240,6 +240,9 @@ launched_scene.reset = function()
 		fuel = 100,
 		hit = false,
 		switch_dir = false,
+		fuel_pc = function(self)
+			return self.fuel / self.fuel_max
+		end,
 	})
 	launched_scene.rocket.offset_x = launched_scene.rocket.width + 10
 	launched_scene.objects = {}
@@ -341,7 +344,7 @@ launched_scene.draw = function()
 	love.graphics.pop()
 	-- ui
 	-- fuel bar
-	local fuel_pc = rocket.fuel / rocket.fuel_max
+	local fuel_pc = rocket:fuel_pc()
 	local r = lerp(2, 0, fuel_pc)
 	local g = lerp(0, 2, fuel_pc)
 	love.graphics.setColor(r, g, 0)
