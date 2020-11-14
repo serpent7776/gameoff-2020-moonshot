@@ -1,5 +1,6 @@
 local lf = require("lib/love-frame")
 
+local PI_2 = math.pi / 2
 local Y_STEP = 50
 local Y_INDEX_MIN = 1
 local Y_INDEX_MAX = 10
@@ -217,6 +218,7 @@ launched_scene.reset = function()
 end
 
 launched_scene.load = function()
+	launched_scene.game_time = 0
 	-- viewport origin is at left, bottom and goes right and up
 	lf.setup_viewport(W, -H)
 	launched_scene.reset()
@@ -242,6 +244,7 @@ launched_scene.keyreleased = function(key, scancode)
 end
 
 launched_scene.update = function(dt)
+	launched_scene.game_time = launched_scene.game_time + dt
 	-- objects
 	for _, obj in ipairs(launched_scene.objects) do
 		obj.x = obj.x - obj.vx * dt
@@ -290,8 +293,15 @@ launched_scene.draw = function()
 	love.graphics.translate(-rocket.x + rocket.offset_x, 0)
 	love.graphics.setColor(1, 1, 1)
 	-- objects
+	local phi = launched_scene.game_time * PI_2
 	for _, obj in ipairs(launched_scene.objects) do
-		love.graphics.draw(obj.image, obj.x, obj.y, 0, 1, 1, obj.width, obj.height_2)
+		if obj.x > rocket.x + W then
+			local dx = obj.x - rocket.x - W
+			local scale = clamp(1 - dx / W, 0, 0.5)
+			love.graphics.draw(obj.image, rocket.x + W - rocket.width - 50, obj.y, phi, scale, scale, obj.width_2, obj.height_2)
+		else
+			love.graphics.draw(obj.image, obj.x, obj.y, 0, 1, 1, obj.width, obj.height_2)
+		end
 	end
 	-- rocket
 	love.graphics.draw(rocket.image, rocket.x, rocket.y, 0, 1, 1, rocket.width, rocket.height_2)
