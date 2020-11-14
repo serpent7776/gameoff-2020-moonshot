@@ -220,7 +220,7 @@ launched_scene.reset = function()
 		fuel_max = 100,
 		fuel = 100,
 		hit = false,
-		thrust = false,
+		switch_dir = false,
 	})
 	launched_scene.rocket.offset_x = launched_scene.rocket.width + 10
 	launched_scene.objects = {}
@@ -243,7 +243,7 @@ end
 
 launched_scene.keypressed = function(key, scancode, is_repeat)
 	if key == 'space' then
-		launched_scene.rocket.thrust = true
+		launched_scene.rocket.switch_dir = true
 	end
 end
 
@@ -265,8 +265,8 @@ launched_scene.update = function(dt)
 	local burn_rate_active = 16
 	local burn_rate_passive = 4
 	rocket.fuel = math.max(0, rocket.fuel - burn_rate_passive * dt)
-	if rocket.thrust and rocket.fuel > 0 then
-		rocket.thrust = false
+	if rocket.switch_dir and rocket.fuel > 0 then
+		rocket.switch_dir = false
 		rocket.fuel = math.max(0, rocket.fuel - burn_rate_active * dt)
 		rocket.dy = -sgn(rocket.dy)
 		launched_scene.move_y(rocket, Y_STEP * rocket.dy)
