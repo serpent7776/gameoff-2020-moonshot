@@ -258,10 +258,6 @@ launched_scene.bounce = function(obj)
 	end
 end
 
-launched_scene.switch_dir = function(obj)
-	obj.dy = -sgn(obj.dy)
-end
-
 launched_scene.switch_dir_to = function(obj, dir)
 	obj.dy = sgn(dir)
 end
@@ -287,7 +283,7 @@ launched_scene.reset = function()
 		fuel = 100,
 		fuel_refill = 45,
 		hit = false,
-		switch_dir = false,
+		switch_dir = 0,
 		fuel_pc = function(self)
 			return self.fuel / self.fuel_max
 		end,
@@ -312,8 +308,10 @@ launched_scene.unload = function()
 end
 
 launched_scene.keypressed = function(key, scancode, is_repeat)
-	if key == 'space' then
-		launched_scene.rocket.switch_dir = true
+	if key == 'up' then
+		launched_scene.rocket.switch_dir = 1
+	elseif key == 'down' then
+		launched_scene.rocket.switch_dir = -1
 	end
 end
 
@@ -335,10 +333,10 @@ launched_scene.update = function(dt)
 	local burn_rate_active = 16
 	local burn_rate_passive = 4
 	rocket.fuel = math.max(0, rocket.fuel - burn_rate_passive * dt)
-	if rocket.switch_dir and rocket.fuel > 0 then
-		rocket.switch_dir = false
+	if rocket.switch_dir ~= 0 and rocket.fuel > 0 then
 		rocket.fuel = math.max(0, rocket.fuel - burn_rate_active * dt)
-		launched_scene.switch_dir(rocket)
+		launched_scene.switch_dir_to(rocket, rocket.switch_dir)
+		rocket.switch_dir = 0
 	end
 	if rocket.fuel > 0 then
 		launched_scene.bounce(rocket)
