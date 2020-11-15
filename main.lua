@@ -239,12 +239,10 @@ launched_scene.meteorite_hit = function()
 end
 
 launched_scene.fuel_meteorite_hit = function()
-	launched_scene.meteorite_hit()
 	launched_scene.fuel_refill()
 end
 
 launched_scene.cash_meteorite_hit = function()
-	launched_scene.meteorite_hit()
 	launched_scene.earn_cash(100)
 end
 
