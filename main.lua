@@ -308,9 +308,9 @@ launched_scene.unload = function()
 end
 
 launched_scene.keypressed = function(key, scancode, is_repeat)
-	if key == 'up' then
+	if key == 'up' or key == 'k' or key == 'x' then
 		launched_scene.rocket.switch_dir = 1
-	elseif key == 'down' then
+	elseif key == 'down' or key =='j' or key == 'z' then
 		launched_scene.rocket.switch_dir = -1
 	end
 end
