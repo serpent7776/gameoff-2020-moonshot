@@ -361,6 +361,7 @@ launched_scene.update = function(dt)
 	local has_objects = table.maxn(launched_scene.objects) > 0
 	if has_objects and launched_scene.objects[1].x < rocket.x - rocket.width - rocket.offset_x then
 		table.remove(launched_scene.objects, 1)
+		cash = cash + 10
 	end
 end
 
