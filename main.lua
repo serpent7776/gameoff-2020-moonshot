@@ -316,9 +316,6 @@ launched_scene.keypressed = function(key, scancode, is_repeat)
 end
 
 launched_scene.keyreleased = function(key, scancode)
-	if key == 'r' then
-		launched_scene.reset()
-	end
 end
 
 launched_scene.update = function(dt)
