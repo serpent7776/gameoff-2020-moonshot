@@ -6,6 +6,7 @@ local Y_STEP = 50
 local Y_INDEX_MIN = 1
 local Y_INDEX_MAX = 10
 local SPAWN_DISTANCE
+local TIME_STEP = 0.36329 / 2
 
 local W, H, W_2, H_2
 local cash
@@ -60,7 +61,7 @@ end
 
 local function animateify(name, grid, frames, obj)
 	obj.image = lf.get_texture(name)
-	obj.animation = anim8.newAnimation(frames, 0.05)
+	obj.animation = anim8.newAnimation(frames, TIME_STEP / 2)
 	obj.width = grid.frameWidth
 	obj.height = grid.frameHeight
 	obj.width_2 = grid.frameWidth / 2
@@ -320,7 +321,7 @@ launched_scene.reset = function()
 	})
 	launched_scene.rocket.offset_x = launched_scene.rocket.width + 10
 	launched_scene.objects = {}
-	launched_scene.rocket_mover = deferred(0.36329 / 2, continue, launched_scene.continue_rocket_movement)
+	launched_scene.rocket_mover = deferred(TIME_STEP, continue, launched_scene.continue_rocket_movement)
 	launched_scene.spawner = deferred(0.6, continue, launched_scene.spawn_object)
 	launched_scene.run_done = conditional(deferred(1, continue, launched_scene.end_run), launched_scene.run_complete)
 end
