@@ -9,6 +9,8 @@ local SPAWN_DISTANCE
 
 local W, H, W_2, H_2
 local cash
+local rocket_grid
+
 local scene
 
 local moon_scene = {}
@@ -53,6 +55,16 @@ local function spriteify(name, obj)
 	obj.height = tex:getHeight()
 	obj.width_2 = obj.width / 2
 	obj.height_2 = obj.height / 2
+	return obj
+end
+
+local function animateify(name, grid, frames, obj)
+	obj.image = lf.get_texture(name)
+	obj.animation = anim8.newAnimation(frames, 0.05)
+	obj.width = grid.frameWidth
+	obj.height = grid.frameHeight
+	obj.width_2 = grid.frameWidth / 2
+	obj.height_2 = grid.frameHeight / 2
 	return obj
 end
 
@@ -120,6 +132,14 @@ local function switch_to(new_scene)
 	end
 	scene = table_copy(new_scene)
 	scene.load()
+end
+
+--[[
+   [ loading
+   ]]
+
+local function gen_grids()
+	rocket_grid = anim8.newGrid(200, 50, 1000, 400)
 end
 
 --[[
@@ -270,7 +290,18 @@ launched_scene.end_run = function()
 end
 
 launched_scene.reset = function()
-	launched_scene.rocket = spriteify('rocket.png', {
+	local grid = rocket_grid
+	local frames = rocket_grid(
+		'1-5',1,
+		'1-5',2,
+		'1-5',3,
+		'1-5',4,
+		'1-5',5,
+		'1-5',6,
+		'1-5',7,
+		'1-5',8
+	)
+	launched_scene.rocket = animateify('rocket-frames.png', grid, frames, {
 		offset_x = 100,
 		x = 0,
 		y = 200,
@@ -356,6 +387,8 @@ launched_scene.update = function(dt)
 	launched_scene.spawner:update(dt)
 	launched_scene.rocket_mover:update(dt)
 	launched_scene.run_done:update(dt)
+	-- animations
+	rocket.animation:update(dt)
 	-- remove objects
 	local has_objects = table.maxn(launched_scene.objects) > 0
 	if has_objects and launched_scene.objects[1].x < rocket.x - rocket.width - rocket.offset_x then
@@ -382,7 +415,7 @@ launched_scene.draw = function()
 		end
 	end
 	-- rocket
-	love.graphics.draw(rocket.image, rocket.x, rocket.y, 0, 1, 1, rocket.width, rocket.height_2)
+	rocket.animation:draw(rocket.image, rocket.x, rocket.y, 0, 1, 1, rocket.width, rocket.height_2)
 	love.graphics.pop()
 	-- ui
 	-- fuel bar
@@ -408,6 +441,7 @@ lf.init = function()
 	SPAWN_DISTANCE = W * 4
 	cash = 0
 	switch_to(moon_scene)
+	gen_grids()
 end
 
 love.keypressed = function(key, scancode, is_repeat)
