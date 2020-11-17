@@ -1,4 +1,5 @@
 local lf = require("lib/love-frame")
+local anim8 = require("lib/anim8/anim8")
 
 local PI_2 = math.pi / 2
 local Y_STEP = 50

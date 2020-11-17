@@ -1,3 +1,6 @@
 [submodule "lib/love-frame"]
 	path = lib/love-frame
 	url = https://github.com/serpent7776/love-frame.git
+[submodule "lib/anim8"]
+	path = lib/anim8
+	url = https://github.com/kikito/anim8.git

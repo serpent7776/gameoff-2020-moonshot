@@ -6,7 +6,7 @@ all: dist play
 
 dist:
 	git ls-files *.lua assets | xargs zip -r ${LOVEFILE}
-	zip -r ${LOVEFILE} lib/love-frame/*
+	zip -r ${LOVEFILE} lib/*/*
 
 play:
 	love ${LOVEFILE}
