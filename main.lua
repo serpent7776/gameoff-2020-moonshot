@@ -240,7 +240,9 @@ launched_scene.spawn_meteorite = function()
 		'1-5',7,
 		'1-5',8
 	)
-	return animateify('asteroid_1.png', grid, frames, launched_scene.spawn({
+	local asteroids = {'asteroid_1.png', 'asteroid_2.png'}
+	local idx = love.math.random(1, #asteroids)
+	return animateify(asteroids[idx], grid, frames, launched_scene.spawn({
 		vx = 50,
 		on_hit = launched_scene.meteorite_hit
 	}))
