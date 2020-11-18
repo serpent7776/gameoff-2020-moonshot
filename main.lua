@@ -5,11 +5,18 @@ local PI_2 = math.pi / 2
 local Y_STEP = 50
 local Y_INDEX_MIN = 1
 local Y_INDEX_MAX = 10
-local SPAWN_DISTANCE
 local TIME_STEP = 0.36329 / 2
 
+-- upgrades
+local cash = 0
+local fuel = {
+	current_level = 1,
+	values = {100, 150, 250},
+	costs = {1000, 2000}
+}
+
 local W, H, W_2, H_2
-local cash
+local SPAWN_DISTANCE
 local rocket_grid
 
 local scene
@@ -144,6 +151,14 @@ local function gen_grids()
 end
 
 --[[
+   [ common
+   ]]
+
+local function get_value(upgrade)
+	return upgrade.values[upgrade.current_level]
+end
+
+--[[
    [ moon_scene
    ]]
 
@@ -160,6 +175,16 @@ moon_scene.prepare_data = function()
 	end
 end
 
+moon_scene.buy_upgrade = function(upgrade)
+	local can_upgrade = upgrade.current_level < #upgrade.values
+	if can_upgrade and cash >= upgrade.costs[upgrade.current_level] then
+		cash = cash - upgrade.costs[upgrade.current_level]
+		upgrade.current_level = upgrade.current_level + 1
+		return true
+	end
+	return false
+end
+
 moon_scene.load = function()
 	moon_scene.prepare_data()
 	-- viewport origin is at bottom, centre and goes right and up
@@ -172,6 +197,10 @@ end
 moon_scene.keyreleased = function(key, scancode)
 	if key == 'space' then
 		switch_to(launched_scene)
+	elseif key == '1' then
+		print('buying max fuel')
+		local r = moon_scene.buy_upgrade(fuel)
+		print(r, 'now has', get_value(fuel))
 	end
 end
 
@@ -310,8 +339,8 @@ launched_scene.reset = function()
 		vx = 1200,
 		ax = 100,
 		gx = -250,
-		fuel_max = 100,
-		fuel = 100,
+		fuel_max = get_value(fuel),
+		fuel = get_value(fuel),
 		fuel_refill = 45,
 		hit = false,
 		switch_dir = 0,
@@ -440,7 +469,6 @@ lf.init = function()
 	W, H = 800, 600
 	W_2, H_2 = W / 2, H / 2
 	SPAWN_DISTANCE = W * 4
-	cash = 0
 	switch_to(moon_scene)
 	gen_grids()
 end
