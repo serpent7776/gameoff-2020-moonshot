@@ -18,6 +18,7 @@ local fuel = {
 local W, H, W_2, H_2
 local SPAWN_DISTANCE
 local rocket_grid
+local asteroid_grid
 
 local scene
 
@@ -148,6 +149,7 @@ end
 
 local function gen_grids()
 	rocket_grid = anim8.newGrid(200, 50, 1000, 400)
+	asteroid_grid = anim8.newGrid(50, 50, 250, 400)
 end
 
 --[[
@@ -227,7 +229,18 @@ launched_scene.spawn = function(obj)
 end
 
 launched_scene.spawn_meteorite = function()
-	return spriteify('asteroid.png', launched_scene.spawn({
+	local grid = asteroid_grid
+	local frames = asteroid_grid(
+		'1-5',1,
+		'1-5',2,
+		'1-5',3,
+		'1-5',4,
+		'1-5',5,
+		'1-5',6,
+		'1-5',7,
+		'1-5',8
+	)
+	return animateify('asteroid_1.png', grid, frames, launched_scene.spawn({
 		vx = 50,
 		on_hit = launched_scene.meteorite_hit
 	}))
@@ -420,6 +433,9 @@ launched_scene.update = function(dt)
 	launched_scene.run_done:update(dt)
 	-- animations
 	rocket.animation:update(dt)
+	for _, obj in ipairs(launched_scene.objects) do
+		obj.animation:update(dt)
+	end
 	-- remove objects
 	local has_objects = table.maxn(launched_scene.objects) > 0
 	if has_objects and launched_scene.objects[1].x < rocket.x - rocket.width - rocket.offset_x then
@@ -440,9 +456,9 @@ launched_scene.draw = function()
 		if obj.x > rocket.x + W then
 			local dx = obj.x - (rocket.x - rocket.width) - W
 			local scale = clamp(1 - dx / SPAWN_DISTANCE, 0, 1) / 2
-			love.graphics.draw(obj.image, rocket.x + W - rocket.width - 50, obj.y, phi, scale, scale, obj.width_2, obj.height_2)
+			obj.animation:draw(obj.image, rocket.x + W - rocket.width - 50, obj.y, phi, scale, scale, obj.width_2, obj.height_2)
 		else
-			love.graphics.draw(obj.image, obj.x, obj.y, 0, 1, 1, 0, obj.height_2)
+			obj.animation:draw(obj.image, obj.x, obj.y, 0, 1, 1, 0, obj.height_2)
 		end
 	end
 	-- rocket
