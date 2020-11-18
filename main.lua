@@ -19,6 +19,7 @@ local W, H, W_2, H_2
 local SPAWN_DISTANCE
 local rocket_grid
 local asteroid_grid
+local fuel_grid
 local dummy_grid
 
 local scene
@@ -151,6 +152,7 @@ end
 local function gen_grids()
 	rocket_grid = anim8.newGrid(200, 50, 1000, 400)
 	asteroid_grid = anim8.newGrid(50, 50, 250, 400)
+	fuel_grid = anim8.newGrid(50, 50, 250, 200)
 	dummy_grid = anim8.newGrid(50, 50, 50, 50)
 end
 
@@ -251,9 +253,14 @@ launched_scene.spawn_meteorite = function()
 end
 
 launched_scene.spawn_fuel_meteorite = function()
-	local grid = dummy_grid
-	local frames = dummy_grid(1,1)
-	return animateify('fueloroid.png', grid, frames, launched_scene.spawn({
+	local grid = fuel_grid
+	local frames = fuel_grid(
+		'1-5',1,
+		'1-5',2,
+		'1-5',3,
+		'1-5',4
+	)
+	return animateify('fuel.png', grid, frames, launched_scene.spawn({
 		vx = 10,
 		on_hit = launched_scene.fuel_meteorite_hit
 	}))
