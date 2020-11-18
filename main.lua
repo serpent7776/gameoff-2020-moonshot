@@ -351,7 +351,8 @@ launched_scene.reset = function()
 	launched_scene.rocket.offset_x = launched_scene.rocket.width + 10
 	launched_scene.objects = {}
 	launched_scene.rocket_mover = deferred(TIME_STEP, continue, launched_scene.continue_rocket_movement)
-	launched_scene.spawner = deferred(0.6, continue, launched_scene.spawn_object)
+	local spawn_delta = launched_scene.rocket.width * 5
+	launched_scene.spawner = deferred(spawn_delta, continue, launched_scene.spawn_object)
 	launched_scene.run_done = conditional(deferred(1, continue, launched_scene.end_run), launched_scene.run_complete)
 end
 
@@ -414,7 +415,7 @@ launched_scene.update = function(dt)
 		end
 	end
 	-- deferred objects
-	launched_scene.spawner:update(dt)
+	launched_scene.spawner:update(dt * rocket.vx)
 	launched_scene.rocket_mover:update(dt)
 	launched_scene.run_done:update(dt)
 	-- animations
