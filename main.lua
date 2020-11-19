@@ -14,6 +14,11 @@ local fuel = {
 	values = {100, 150, 250},
 	costs = {1000, 2000}
 }
+local acceleration = {
+	current_level = 1,
+	values = {100, 150, 250},
+	costs = {1500, 3000}
+}
 
 local W, H, W_2, H_2
 local SPAWN_DISTANCE
@@ -208,6 +213,10 @@ moon_scene.keyreleased = function(key, scancode)
 		print('buying max fuel')
 		local r = moon_scene.buy_upgrade(fuel)
 		print(r, 'now has', get_value(fuel))
+	elseif key == '2' then
+		print('buying acceleration')
+		local r = moon_scene.buy_upgrade(acceleration)
+		print(r, 'now has', get_value(acceleration))
 	end
 end
 
@@ -370,7 +379,7 @@ launched_scene.reset = function()
 		y = 200,
 		dy = -1,
 		vx = 1200,
-		ax = 100,
+		ax = get_value(acceleration),
 		gx = -250,
 		fuel_max = get_value(fuel),
 		fuel = get_value(fuel),
