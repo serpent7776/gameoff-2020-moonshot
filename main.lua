@@ -192,6 +192,7 @@ moon_scene.buy_upgrade = function(upgrade)
 end
 
 moon_scene.load = function()
+	launched_scene.last_fuel_spawn = 0
 	moon_scene.prepare_data()
 	-- viewport origin is at bottom, centre and goes right and up
 	lf.setup_viewport(W, -H)
@@ -252,7 +253,7 @@ launched_scene.spawn_meteorite = function()
 	}))
 end
 
-launched_scene.spawn_fuel_meteorite = function()
+launched_scene.spawn_fuel = function()
 	local grid = fuel_grid
 	local frames = fuel_grid(
 		'1-5',1,
@@ -266,7 +267,7 @@ launched_scene.spawn_fuel_meteorite = function()
 	}))
 end
 
-launched_scene.spawn_cash_meteorite = function()
+launched_scene.spawn_cash = function()
 	local grid = dummy_grid
 	local frames = dummy_grid(1,1)
 	return animateify('cashoroid.png', grid, frames, launched_scene.spawn({
@@ -276,15 +277,15 @@ launched_scene.spawn_cash_meteorite = function()
 end
 
 launched_scene.spawn_object = function()
-	local v = love.math.random()
-	if v < 0.95 then
-		launched_scene.spawn_meteorite()
+	launched_scene.last_fuel_spawn = launched_scene.last_fuel_spawn + 1
+	local v = love.math.random(1, 100)
+	if v > 100 - math.min(10, launched_scene.last_fuel_spawn / 6) then
+		launched_scene.spawn_fuel()
+		launched_scene.last_fuel_spawn = 0
+	elseif v > 98 then
+		launched_scene.spawn_cash()
 	else
-		if launched_scene.rocket:fuel_pc() < 0.4 then
-			launched_scene.spawn_fuel_meteorite()
-		else
-			launched_scene.spawn_cash_meteorite()
-		end
+		launched_scene.spawn_meteorite()
 	end
 end
 
