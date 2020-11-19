@@ -471,13 +471,13 @@ launched_scene.draw = function()
 		if obj.x > rocket.x + W then
 			local dx = obj.x - (rocket.x - rocket.width) - W
 			local scale = clamp(1 - dx / SPAWN_DISTANCE, 0, 1) / 2
-			obj.animation:draw(obj.image, rocket.x + W - rocket.width - 50, obj.y, phi, scale, scale, obj.width_2, obj.height_2)
+			obj.animation:draw(obj.image, rocket.x + W - rocket.width - 50, obj.y, phi, scale, -scale, obj.width_2, obj.height_2)
 		else
-			obj.animation:draw(obj.image, obj.x, obj.y, 0, 1, 1, 0, obj.height_2)
+			obj.animation:draw(obj.image, obj.x, obj.y, 0, 1, -1, 0, obj.height_2)
 		end
 	end
 	-- rocket
-	rocket.animation:draw(rocket.image, rocket.x, rocket.y, 0, 1, 1, rocket.width, rocket.height_2)
+	rocket.animation:draw(rocket.image, rocket.x, rocket.y, 0, 1, -1, rocket.width, rocket.height_2)
 	love.graphics.pop()
 	-- ui
 	-- fuel bar
