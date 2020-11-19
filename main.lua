@@ -299,9 +299,11 @@ end
 
 launched_scene.collected = function(obj)
 	local rocket = launched_scene.rocket
-	local dx = obj.x - rocket.x
-	local x = dx < 0 and -dx < obj.width + rocket.width
-	local y = math.abs(obj.y - rocket.y) < obj.height_2 + rocket.height_2
+	local rocket_x = rocket.x - rocket.hitbox_offset_x
+	local rocket_width = rocket.width - rocket.hitbox_offset_x
+	local dx = obj.x - rocket_x
+	local x = dx < 0 and -dx < obj.width + rocket_width
+	local y = math.abs(obj.y - rocket.y) < obj.height_2 + rocket.hitbox_height_2
 	return x and y
 end
 
@@ -362,6 +364,8 @@ launched_scene.reset = function()
 	)
 	launched_scene.rocket = animateify('rocket-frames.png', grid, frames, {
 		offset_x = 100,
+		hitbox_offset_x = 23,
+		hitbox_height_2 = 14,
 		x = 0,
 		y = 200,
 		dy = -1,
