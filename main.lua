@@ -6,6 +6,7 @@ local Y_STEP = 50
 local Y_INDEX_MIN = 1
 local Y_INDEX_MAX = 10
 local TIME_STEP = 0.36329 / 2
+local DESTINATION_DISTANCE = 1000000
 
 -- upgrades
 local cash = 0
@@ -481,17 +482,18 @@ launched_scene.draw = function()
 	love.graphics.setColor(1, 1, 1)
 	-- objects
 	local phi = launched_scene.game_time * PI_2
+	local y_offset = 20
 	for _, obj in ipairs(launched_scene.objects) do
 		if obj.x > rocket.x + W then
 			local dx = obj.x - (rocket.x - rocket.width) - W
 			local scale = clamp(1 - dx / SPAWN_DISTANCE, 0, 1) / 2
-			obj.animation:draw(obj.image, rocket.x + W - rocket.width - 50, obj.y, phi, scale, -scale, obj.width_2, obj.height_2)
+			obj.animation:draw(obj.image, rocket.x + W - rocket.width - 50, obj.y + y_offset, phi, scale, -scale, obj.width_2, obj.height_2)
 		else
-			obj.animation:draw(obj.image, obj.x, obj.y, 0, 1, -1, 0, obj.height_2)
+			obj.animation:draw(obj.image, obj.x, obj.y + y_offset, 0, 1, -1, 0, obj.height_2)
 		end
 	end
 	-- rocket
-	rocket.animation:draw(rocket.image, rocket.x, rocket.y, 0, 1, -1, rocket.width, rocket.height_2)
+	rocket.animation:draw(rocket.image, rocket.x, rocket.y + y_offset, 0, 1, -1, rocket.width, rocket.height_2)
 	love.graphics.pop()
 	-- ui
 	-- fuel bar
@@ -500,11 +502,17 @@ launched_scene.draw = function()
 	local g = lerp(0, 2, fuel_pc)
 	love.graphics.setColor(r, g, 0)
 	love.graphics.rectangle('fill', 10, H-10, (W-20)*fuel_pc, -20)
-	-- meters
+	-- distance bar
 	love.graphics.setColor(1, 1, 1)
-	love.graphics.print(string.format("%.2f", rocket.x), 10, 25, 0, 1, -1)
-	love.graphics.print(string.format("%.2f", rocket.vx), 200, 25, 0, 1, -1)
-	love.graphics.print(string.format("%.2f", cash), 300, 25, 0, 1, -1)
+	local distance_pc = clamp(rocket.x / DESTINATION_DISTANCE, 0, 1)
+	local distance_width = W - 20
+	local distance_travelled = distance_width * distance_pc
+	love.graphics.rectangle('fill', 10, 10, distance_width, 1)
+	love.graphics.circle('fill', 10+distance_travelled, 10, 5)
+	-- meters
+	love.graphics.print(string.format("%.2f", rocket.x), 10, H-35, 0, 1, -1)
+	love.graphics.print(string.format("%.2f", rocket.vx), 200, H-35, 0, 1, -1)
+	love.graphics.print(string.format("%.2f", cash), 300, H-35, 0, 1, -1)
 end
 
 --[[
