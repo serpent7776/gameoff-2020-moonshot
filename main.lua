@@ -525,6 +525,7 @@ lf.init = function()
 	SPAWN_DISTANCE = W * 4
 	switch_to(moon_scene)
 	gen_grids()
+	love.graphics.setBackgroundColor(0, 10 / 255, 45 / 255)
 end
 
 love.keypressed = function(key, scancode, is_repeat)
