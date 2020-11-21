@@ -7,6 +7,7 @@ local Y_INDEX_MIN = 1
 local Y_INDEX_MAX = 10
 local TIME_STEP = 0.36329 / 2
 local DESTINATION_DISTANCE = 1000000
+local STARS_COUNT = 25
 
 -- upgrades
 local cash = 0
@@ -236,7 +237,22 @@ end
    [ launched_scene
    ]]
 
-launched_scene.spawn = function(obj)
+launched_scene.spawn_star = function()
+	local star = {
+		x = W * 2 * love.math.random(),
+		y = love.math.random(Y_STEP * Y_INDEX_MIN, Y_STEP * (Y_INDEX_MAX + 1)),
+	}
+	table.insert(launched_scene.stars, star)
+	return star
+end
+
+launched_scene.rewind_star = function(star)
+	star.x = W + launched_scene.rocket.x/4 + love.math.random() * SPAWN_DISTANCE
+	star.y = love.math.random(Y_STEP * Y_INDEX_MIN, Y_STEP * (Y_INDEX_MAX + 1))
+	return star
+end
+
+launched_scene.spawn_obj = function(obj)
 	obj.x = W + launched_scene.rocket.x + SPAWN_DISTANCE
 	obj.y = Y_STEP * love.math.random(Y_INDEX_MIN, Y_INDEX_MAX)
 	table.insert(launched_scene.objects, obj)
@@ -257,7 +273,7 @@ launched_scene.spawn_meteorite = function()
 	)
 	local asteroids = {'asteroid_1.png', 'asteroid_2.png'}
 	local idx = love.math.random(1, #asteroids)
-	return animateify(asteroids[idx], grid, frames, launched_scene.spawn({
+	return animateify(asteroids[idx], grid, frames, launched_scene.spawn_obj({
 		vx = 50,
 		on_hit = launched_scene.meteorite_hit
 	}))
@@ -271,7 +287,7 @@ launched_scene.spawn_fuel = function()
 		'1-5',3,
 		'1-5',4
 	)
-	return animateify('fuel.png', grid, frames, launched_scene.spawn({
+	return animateify('fuel.png', grid, frames, launched_scene.spawn_obj({
 		vx = 10,
 		on_hit = launched_scene.fuel_meteorite_hit
 	}))
@@ -280,7 +296,7 @@ end
 launched_scene.spawn_cash = function()
 	local grid = dummy_grid
 	local frames = dummy_grid(1,1)
-	return animateify('cashoroid.png', grid, frames, launched_scene.spawn({
+	return animateify('cashoroid.png', grid, frames, launched_scene.spawn_obj({
 		vx = 0,
 		on_hit = launched_scene.cash_meteorite_hit
 	}))
@@ -397,6 +413,10 @@ launched_scene.reset = function()
 	local spawn_delta = launched_scene.rocket.width * 4.5
 	launched_scene.spawner = deferred(spawn_delta, continue, launched_scene.spawn_object)
 	launched_scene.run_done = conditional(deferred(1, continue, launched_scene.end_run), launched_scene.run_complete)
+	launched_scene.stars = {}
+	for i = 1, STARS_COUNT do
+		launched_scene.spawn_star()
+	end
 end
 
 launched_scene.load = function()
@@ -472,6 +492,12 @@ launched_scene.update = function(dt)
 		table.remove(launched_scene.objects, 1)
 		cash = cash + 10
 	end
+	-- rewind stars
+	for _, star in ipairs(launched_scene.stars) do
+		if star.x < rocket.x/4 - rocket.width * 2 then
+			launched_scene.rewind_star(star)
+		end
+	end
 end
 
 launched_scene.draw = function()
@@ -494,8 +520,13 @@ launched_scene.draw = function()
 	end
 	-- rocket
 	rocket.animation:draw(rocket.image, rocket.x, rocket.y + y_offset, 0, 1, -1, rocket.width, rocket.height_2)
-	love.graphics.pop()
+	-- stars
+	local star_scale = clamp(rocket.vx / 1000 + 1, 1, 10) + love.math.random()
+	for _, star in ipairs(launched_scene.stars) do
+		love.graphics.draw(lf.get_texture('star.png'), star.x + rocket.x * 3/4, star.y, 0, star_scale, -1)
+	end
 	-- ui
+	love.graphics.pop()
 	-- fuel bar
 	local fuel_pc = rocket:fuel_pc()
 	local r = lerp(2, 0, fuel_pc)
