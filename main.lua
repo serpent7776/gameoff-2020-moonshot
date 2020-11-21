@@ -310,7 +310,7 @@ launched_scene.spawn_object = function()
 	if v > 100 - math.min(10, launched_scene.last_fuel_spawn / 6) then
 		launched_scene.spawn_fuel()
 		launched_scene.last_fuel_spawn = 0
-	elseif v > 98 then
+	elseif v > 97 then
 		launched_scene.spawn_cash()
 	else
 		launched_scene.spawn_meteorite()
