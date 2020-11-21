@@ -507,13 +507,12 @@ launched_scene.draw = function()
 	love.graphics.translate(-rocket.x + rocket.offset_x, 0)
 	love.graphics.setColor(1, 1, 1)
 	-- objects
-	local phi = launched_scene.game_time * PI_2
 	local y_offset = 20
 	for _, obj in ipairs(launched_scene.objects) do
 		if obj.x > rocket.x + W then
 			local dx = obj.x - (rocket.x - rocket.width) - W
-			local scale = clamp(1 - dx / SPAWN_DISTANCE, 0, 1) / 2
-			obj.animation:draw(obj.image, rocket.x + W - rocket.width - 50, obj.y + y_offset, phi, scale, -scale, obj.width_2, obj.height_2)
+			local scale = clamp(1 - dx / SPAWN_DISTANCE, 0, 1) * 0.75
+			obj.animation:draw(obj.image, rocket.x + W - rocket.width - 50, obj.y + y_offset, 0, scale, -scale, obj.width_2, obj.height_2)
 		else
 			obj.animation:draw(obj.image, obj.x, obj.y + y_offset, 0, 1, -1, 0, obj.height_2)
 		end
