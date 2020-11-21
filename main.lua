@@ -95,6 +95,14 @@ local function table_copy(src)
 	return dst
 end
 
+local function table_sum(tab)
+	local sum = 0
+	for _, val in ipairs(tab) do
+		sum = sum + val
+	end
+	return sum
+end
+
 local function decayed(initial, half_life)
 	return {
 		initial = initial,
@@ -304,16 +312,52 @@ launched_scene.spawn_cash = function()
 	}))
 end
 
+local function make_randomizer()
+	return {
+		weight_total = 0,
+		weights = {},
+		things = {},
+
+		recalc = function(self)
+			self.weight_total = table_sum(self.weights)
+		end,
+
+		add = function(self, weight, thing)
+			table.insert(self.weights, weight)
+			table.insert(self.things, thing)
+			self:recalc()
+		end,
+
+		get = function(self)
+			local v = love.math.random(1, self.weight_total)
+			for idx, weight in ipairs(self.weights) do
+				if v < weight then
+					return things[idx]
+				end
+			end
+		end,
+	}
+end
+
 launched_scene.spawn_object = function()
 	launched_scene.last_fuel_spawn = launched_scene.last_fuel_spawn + 1
-	local v = love.math.random(1, 100)
-	if v > 100 - math.min(10, launched_scene.last_fuel_spawn / 6) then
+	local w_fuel = math.min(10, launched_scene.last_fuel_spawn / 6)
+	local w_cash = 5
+	local w_meteorite = 90
+	local w_sum = w_fuel + w_cash + w_meteorite
+	local prob_fuel = w_fuel
+	local prob_cash = prob_fuel + w_cash
+	local prob_meteorite = prob_cash + w_meteorite
+	local v = love.math.random(1, w_sum)
+	if v <= prob_fuel then
 		launched_scene.spawn_fuel()
 		launched_scene.last_fuel_spawn = 0
-	elseif v > 97 then
+	elseif v <= prob_cash then
 		launched_scene.spawn_cash()
-	else
+	elseif v <= prob_meteorite then
 		launched_scene.spawn_meteorite()
+	else
+		print('random out of range:', v)
 	end
 end
 
