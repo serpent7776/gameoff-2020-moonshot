@@ -27,6 +27,7 @@ local SPAWN_DISTANCE
 local rocket_grid
 local asteroid_grid
 local fuel_grid
+local cash_grid
 local dummy_grid
 
 local scene
@@ -160,6 +161,7 @@ local function gen_grids()
 	rocket_grid = anim8.newGrid(200, 50, 1000, 400)
 	asteroid_grid = anim8.newGrid(50, 50, 250, 400)
 	fuel_grid = anim8.newGrid(50, 50, 250, 200)
+	cash_grid = anim8.newGrid(50, 50, 250, 50)
 	dummy_grid = anim8.newGrid(50, 50, 50, 50)
 end
 
@@ -294,9 +296,9 @@ launched_scene.spawn_fuel = function()
 end
 
 launched_scene.spawn_cash = function()
-	local grid = dummy_grid
-	local frames = dummy_grid(1,1)
-	return animateify('cashoroid.png', grid, frames, launched_scene.spawn_obj({
+	local grid = cash_grid
+	local frames = cash_grid('1-4',1)
+	return animateify('cash.png', grid, frames, launched_scene.spawn_obj({
 		vx = 0,
 		on_hit = launched_scene.cash_meteorite_hit
 	}))
@@ -388,7 +390,7 @@ launched_scene.reset = function()
 		'1-5',7,
 		'1-5',8
 	)
-	launched_scene.rocket = animateify('rocket-frames.png', grid, frames, {
+	launched_scene.rocket = animateify('rocket.png', grid, frames, {
 		offset_x = 100,
 		hitbox_offset_x = 23,
 		hitbox_height_2 = 14,
