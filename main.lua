@@ -18,8 +18,8 @@ local fuel = {
 }
 local acceleration = {
 	current_level = 1,
-	values = {100, 150, 250},
-	costs = {1500, 3000}
+	values = {100, 150, 250, 500},
+	costs = {1000, 1500, 2500}
 }
 
 local W, H, W_2, H_2
