@@ -13,8 +13,8 @@ local STARS_COUNT = 25
 local cash = 0
 local fuel = {
 	current_level = 1,
-	values = {100, 150, 250},
-	costs = {1000, 2000}
+	values = {100, 150, 250, 450, 750},
+	costs = {750, 1500, 2500, 4500}
 }
 local acceleration = {
 	current_level = 1,
