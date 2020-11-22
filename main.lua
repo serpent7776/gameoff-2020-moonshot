@@ -186,16 +186,7 @@ end
    ]]
 
 moon_scene.prepare_data = function()
-	moon_scene.moon_top_h = H * 0.1
-	moon_scene.moon_vertices = {}
-	local max_i = 10
-	for i = 0, max_i do
-		local c = max_i / 2
-		local x = (i - c) / c * W_2
-		local y = sinc(0, moon_scene.moon_top_h, i / c)
-		moon_scene.moon_vertices[i * 2 + 1] = x
-		moon_scene.moon_vertices[i * 2 + 2] = y
-	end
+	moon_scene.bg = lf.get_texture('moon.png')
 end
 
 moon_scene.buy_upgrade = function(upgrade)
@@ -237,10 +228,8 @@ end
 
 moon_scene.draw = function()
 	love.graphics.translate(W_2, -H)
-	love.graphics.setColor(0.86, 0.86, 0.86)
-	love.graphics.polygon('fill', moon_scene.moon_vertices)
-	love.graphics.setColor(0.1, 0, 0.86)
-	love.graphics.rectangle('fill', -10, moon_scene.moon_top_h*0.9, 20, moon_scene.moon_top_h*0.5)
+	local bg = moon_scene.bg
+	love.graphics.draw(bg, 0, 0, 0, 1, -1, bg:getWidth()/2, bg:getHeight())
 end
 
 --[[
