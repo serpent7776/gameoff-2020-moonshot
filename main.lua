@@ -541,6 +541,11 @@ launched_scene.draw = function()
 	love.graphics.push()
 	love.graphics.translate(-rocket.x + rocket.offset_x, 0)
 	love.graphics.setColor(1, 1, 1)
+	-- stars
+	local star_scale = clamp(rocket.vx / 1000 + 1, 1, 10) + love.math.random()
+	for _, star in ipairs(launched_scene.stars) do
+		love.graphics.draw(lf.get_texture('star.png'), star.x + rocket.x * 3/4, star.y, 0, star_scale, -1)
+	end
 	-- objects
 	local y_offset = 20
 	for _, obj in ipairs(launched_scene.objects) do
@@ -554,11 +559,6 @@ launched_scene.draw = function()
 	end
 	-- rocket
 	rocket.animation:draw(rocket.image, rocket.x, rocket.y + y_offset, 0, 1, -1, rocket.width, rocket.height_2)
-	-- stars
-	local star_scale = clamp(rocket.vx / 1000 + 1, 1, 10) + love.math.random()
-	for _, star in ipairs(launched_scene.stars) do
-		love.graphics.draw(lf.get_texture('star.png'), star.x + rocket.x * 3/4, star.y, 0, star_scale, -1)
-	end
 	-- ui
 	love.graphics.pop()
 	-- fuel bar
