@@ -39,6 +39,13 @@ local launched_scene = {}
    [ utils
    ]]
 
+local function rep(n, f)
+	while n > 0 do
+		f()
+		n = n - 1
+	end
+end
+
 local function lerp(x, y, a)
 	return y * a + x * (1 - a)
 end
@@ -449,9 +456,7 @@ launched_scene.reset = function()
 	launched_scene.spawner = deferred(spawn_delta, continue, launched_scene.spawn_object)
 	launched_scene.run_done = conditional(deferred(1, continue, launched_scene.end_run), launched_scene.run_complete)
 	launched_scene.stars = {}
-	for i = 1, STARS_COUNT do
-		launched_scene.spawn_star()
-	end
+	rep(STARS_COUNT, launched_scene.spawn_star)
 end
 
 launched_scene.load = function()
