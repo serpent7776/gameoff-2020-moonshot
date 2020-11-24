@@ -160,6 +160,20 @@ local function continue(deferred)
 	return deferred
 end
 
+local function group()
+	objects = {}
+	return {
+		add = function(deferred)
+			table.insert(objects, deferred)
+		end,
+		update = function(dt)
+			for _, obj in ipairs(objects) do
+				obj:update(dt)
+			end
+		end,
+	}
+end
+
 local function switch_to(new_scene)
 	if scene and scene.unload then
 		scene.unload()
@@ -455,6 +469,10 @@ launched_scene.reset = function()
 	local spawn_delta = launched_scene.rocket.width * 4.5
 	launched_scene.spawner = deferred(spawn_delta, continue, launched_scene.spawn_object)
 	launched_scene.run_done = conditional(deferred(1, continue, launched_scene.end_run), launched_scene.run_complete)
+	launched_scene.deferrer = group()
+	launched_scene.deferrer.add(launched_scene.rocket_mover)
+	-- launched_scene.deferrer.add(launched_scene.spawner) -- needs to updated separately
+	launched_scene.deferrer.add(launched_scene.run_done)
 	launched_scene.stars = {}
 	rep(STARS_COUNT, launched_scene.spawn_star)
 end
@@ -519,8 +537,7 @@ launched_scene.update = function(dt)
 	end
 	-- deferred objects
 	launched_scene.spawner:update(dt * rocket.vx)
-	launched_scene.rocket_mover:update(dt)
-	launched_scene.run_done:update(dt)
+	launched_scene.deferrer.update(dt)
 	-- animations
 	rocket.animation:update(dt)
 	for _, obj in ipairs(launched_scene.objects) do
