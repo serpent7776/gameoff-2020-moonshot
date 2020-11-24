@@ -160,6 +160,11 @@ local function reset(deferred)
 	return deferred
 end
 
+local function continue(deferred)
+	deferred.timeout = 0
+	return deferred
+end
+
 local function stop(deferred)
 	deferred.update = function(_, _)
 		-- do nothing
@@ -444,7 +449,20 @@ launched_scene.to_the_moon = function()
 end
 
 launched_scene.back_to_life = function()
-	-- TODO: implement --
+	local function warp()
+		local dt = 0.02
+		launched_scene.rocket.warp_x = launched_scene.rocket.warp_x + W * dt
+	end
+	local function offscreen()
+		return launched_scene.rocket.offset_x > W
+	end
+	local function game_complete()
+		print('game done')
+	end
+	stop(launched_scene.rocket_mover)
+	stop(launched_scene.spawner)
+	launched_scene.deferrer.add(deferred(4, continue, warp))
+	launched_scene.deferrer.add(conditional(deferred(1, stop, game_complete), offscreen))
 end
 
 launched_scene.reset = function()
@@ -474,6 +492,7 @@ launched_scene.reset = function()
 		fuel_refill = 45,
 		hit = false,
 		switch_dir = 0,
+		warp_x = 0,
 		fuel_pc = function(self)
 			return self.fuel / self.fuel_max
 		end,
@@ -597,7 +616,7 @@ launched_scene.draw = function()
 		end
 	end
 	-- rocket
-	rocket.animation:draw(rocket.image, rocket.x, rocket.y + y_offset, 0, 1, -1, rocket.width, rocket.height_2)
+	rocket.animation:draw(rocket.image, rocket.x + rocket.warp_x, rocket.y + y_offset, 0, 1, -1, rocket.width, rocket.height_2)
 	-- ui
 	love.graphics.pop()
 	-- fuel bar
