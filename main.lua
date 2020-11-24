@@ -137,7 +137,7 @@ local function deferred(timeout, reset_proc, func)
 		update = function(self, dt)
 			self.timeout = self.timeout - dt
 			if self.timeout <= 0 then
-				func()
+				func(dt)
 				reset_proc(self)
 			end
 		end,
@@ -361,7 +361,7 @@ local function make_randomizer()
 	}
 end
 
-launched_scene.spawn_object = function()
+launched_scene.spawn_object = function(_)
 	launched_scene.last_fuel_spawn = launched_scene.last_fuel_spawn + 1
 	local w_fuel = math.min(10, launched_scene.last_fuel_spawn / 6)
 	local w_cash = 5
@@ -387,7 +387,7 @@ launched_scene.move_y = function(obj, dy)
 	obj.y = clamp(obj.y + dy, Y_STEP * Y_INDEX_MIN, Y_STEP * Y_INDEX_MAX)
 end
 
-launched_scene.continue_rocket_movement = function()
+launched_scene.continue_rocket_movement = function(_)
 	launched_scene.move_y(launched_scene.rocket, Y_STEP * launched_scene.rocket.dy)
 end
 
@@ -444,19 +444,18 @@ launched_scene.run_completed = function()
 	return launched_scene.rocket.x >= DESTINATION_DISTANCE
 end
 
-launched_scene.to_the_moon = function()
+launched_scene.to_the_moon = function(_)
 	switch_to(moon_scene)
 end
 
-launched_scene.back_to_life = function()
-	local function warp()
-		local dt = 0.02
+launched_scene.back_to_life = function(_)
+	local function warp(dt)
 		launched_scene.rocket.warp_x = launched_scene.rocket.warp_x + W * dt
 	end
-	local function offscreen()
+	local function offscreen(_)
 		return launched_scene.rocket.offset_x > W
 	end
-	local function game_complete()
+	local function game_complete(_)
 		print('game done')
 	end
 	stop(launched_scene.rocket_mover)
