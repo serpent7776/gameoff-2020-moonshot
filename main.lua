@@ -160,6 +160,13 @@ local function continue(deferred)
 	return deferred
 end
 
+local function stop(deferred)
+	deferred.update = function(_, _)
+		-- do nothing
+	end
+	return deferred
+end
+
 local function group()
 	objects = {}
 	return {
@@ -424,12 +431,20 @@ launched_scene.switch_dir_to = function(obj, dir)
 	obj.dy = sgn(dir)
 end
 
-launched_scene.run_complete = function()
+launched_scene.run_failed = function()
 	return launched_scene.rocket.vx <= 0
 end
 
-launched_scene.end_run = function()
+launched_scene.run_completed = function()
+	return launched_scene.rocket.x >= DESTINATION_DISTANCE
+end
+
+launched_scene.to_the_moon = function()
 	switch_to(moon_scene)
+end
+
+launched_scene.back_to_life = function()
+	-- TODO: implement --
 end
 
 launched_scene.reset = function()
@@ -468,11 +483,13 @@ launched_scene.reset = function()
 	launched_scene.rocket_mover = deferred(TIME_STEP, continue, launched_scene.continue_rocket_movement)
 	local spawn_delta = launched_scene.rocket.width * 4.5
 	launched_scene.spawner = deferred(spawn_delta, continue, launched_scene.spawn_object)
-	launched_scene.run_done = conditional(deferred(1, continue, launched_scene.end_run), launched_scene.run_complete)
+	launched_scene.ender = conditional(deferred(1, continue, launched_scene.to_the_moon), launched_scene.run_failed)
+	launched_scene.completer = conditional(deferred(1, stop, launched_scene.back_to_life), launched_scene.run_completed)
 	launched_scene.deferrer = group()
 	launched_scene.deferrer.add(launched_scene.rocket_mover)
 	-- launched_scene.deferrer.add(launched_scene.spawner) -- needs to updated separately
-	launched_scene.deferrer.add(launched_scene.run_done)
+	launched_scene.deferrer.add(launched_scene.ender)
+	launched_scene.deferrer.add(launched_scene.completer)
 	launched_scene.stars = {}
 	rep(STARS_COUNT, launched_scene.spawn_star)
 end
