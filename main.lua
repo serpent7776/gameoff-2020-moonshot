@@ -155,7 +155,7 @@ local function conditional(deferred, predicate)
 	}
 end
 
-local function continue(deferred)
+local function reset(deferred)
 	deferred.timeout = deferred.timeout + deferred.initial_timeout
 	return deferred
 end
@@ -480,10 +480,10 @@ launched_scene.reset = function()
 	})
 	launched_scene.rocket.offset_x = launched_scene.rocket.width + 10
 	launched_scene.objects = {}
-	launched_scene.rocket_mover = deferred(TIME_STEP, continue, launched_scene.continue_rocket_movement)
+	launched_scene.rocket_mover = deferred(TIME_STEP, reset, launched_scene.continue_rocket_movement)
 	local spawn_delta = launched_scene.rocket.width * 4.5
-	launched_scene.spawner = deferred(spawn_delta, continue, launched_scene.spawn_object)
-	launched_scene.ender = conditional(deferred(1, continue, launched_scene.to_the_moon), launched_scene.run_failed)
+	launched_scene.spawner = deferred(spawn_delta, reset, launched_scene.spawn_object)
+	launched_scene.ender = conditional(deferred(1, reset, launched_scene.to_the_moon), launched_scene.run_failed)
 	launched_scene.completer = conditional(deferred(1, stop, launched_scene.back_to_life), launched_scene.run_completed)
 	launched_scene.deferrer = group()
 	launched_scene.deferrer.add(launched_scene.rocket_mover)
