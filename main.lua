@@ -74,6 +74,12 @@ local function sgn(x)
 	end
 end
 
+local function curry1(fun, arg)
+	return function()
+		return fun(arg)
+	end
+end
+
 local function spriteify(name, obj)
 	local tex = lf.get_texture(name)
 	obj.image = tex
@@ -92,6 +98,45 @@ local function animateify(name, grid, frames, obj)
 	obj.width_2 = grid.frameWidth / 2
 	obj.height_2 = grid.frameHeight / 2
 	return obj
+end
+
+local function contains(obj, x, y)
+	if x < obj.x or x > obj.x + obj.width then
+		return false
+	end
+	if y < obj.y or y > obj.y + obj.height then
+		return false
+	end
+	return true
+end
+
+local function clickable()
+	local objects = {}
+	local handlers = {}
+	return {
+		add = function(obj, handler)
+			table.insert(objects, obj)
+			table.insert(handlers, handler)
+		end,
+		click = function(x, y)
+			for i, obj in ipairs(objects) do
+				if contains(obj, x, y) then
+					handlers[i](x, y)
+				end
+			end
+		end,
+	}
+end
+
+local function button(image_name, x, y)
+	local tex = lf.get_texture(image_name)
+	return {
+		tex = tex,
+		x = x,
+		y = y,
+		width = tex:getWidth(),
+		height = tex:getHeight(),
+	}
 end
 
 local function table_copy(src)
@@ -257,12 +302,24 @@ moon_scene.buy_upgrade = function(upgrade)
 	return false
 end
 
+moon_scene.create_button = function(image_name, x, y, handler)
+	local btn = button(image_name, x, y)
+	moon_scene.buttons.add(btn, handler)
+	return btn
+end
+
+moon_scene.draw_button = function(btn)
+	love.graphics.draw(btn.tex, btn.x, btn.y, 0, 1, -1)
+end
+
 moon_scene.load = function()
 	launched_scene.last_fuel_spawn = 0
 	launched_scene.scroll_x = 0
 	moon_scene.prepare_data()
 	-- viewport origin is at bottom, centre and goes right and up
 	lf.setup_viewport(W, -H)
+	moon_scene.buttons = clickable()
+	moon_scene.fuel_upgrade = moon_scene.create_button('up-fuel.png', 10, H-10, curry1(moon_scene.buy_upgrade, fuel_upgrade))
 end
 
 moon_scene.keypressed = function(key, scancode, is_repeat)
@@ -286,9 +343,13 @@ moon_scene.update = function(dt)
 end
 
 moon_scene.draw = function()
-	love.graphics.translate(W_2, -H)
+	love.graphics.translate(0, -H)
+	love.graphics.push()
+	love.graphics.translate(W_2, 0)
 	local bg = moon_scene.bg
 	love.graphics.draw(bg, 0, 0, 0, 1, -1, bg:getWidth()/2, bg:getHeight())
+	love.graphics.pop()
+	moon_scene.draw_button(moon_scene.fuel_upgrade)
 end
 
 --[[
