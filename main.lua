@@ -130,6 +130,31 @@ local function decayed(initial, half_life)
 	}
 end
 
+local function transistor(initial_state)
+	local t = {
+		call = nil,
+		call_on = function(fun)
+			fun()
+		end,
+		call_off = function(_)
+			-- do nothing
+		end,
+		set = function(self, state)
+			if state then
+				self.call = self.call_on
+			else
+				self.call = self.call_off
+			end
+		end,
+	}
+	t:set(initial_state)
+	return setmetatable(t, {
+		__call = function(tr, fun)
+			tr.call(fun)
+		end,
+	})
+end
+
 local function deferred(timeout, reset_proc, func)
 	return {
 		initial_timeout = timeout,
@@ -234,6 +259,7 @@ end
 
 moon_scene.load = function()
 	launched_scene.last_fuel_spawn = 0
+	launched_scene.scroll_x = 0
 	moon_scene.prepare_data()
 	-- viewport origin is at bottom, centre and goes right and up
 	lf.setup_viewport(W, -H)
@@ -279,13 +305,13 @@ launched_scene.spawn_star = function()
 end
 
 launched_scene.rewind_star = function(star)
-	star.x = W + launched_scene.rocket.x/4 + love.math.random() * SPAWN_DISTANCE
+	star.x = W + launched_scene.scroll_x/4 + love.math.random() * SPAWN_DISTANCE
 	star.y = love.math.random(Y_STEP * Y_INDEX_MIN, Y_STEP * (Y_INDEX_MAX + 1))
 	return star
 end
 
 launched_scene.spawn_obj = function(obj)
-	obj.x = W + launched_scene.rocket.x + SPAWN_DISTANCE
+	obj.x = W + launched_scene.scroll_x + SPAWN_DISTANCE
 	obj.y = Y_STEP * love.math.random(Y_INDEX_MIN, Y_INDEX_MAX)
 	table.insert(launched_scene.objects, obj)
 	return obj
@@ -450,7 +476,7 @@ end
 
 launched_scene.back_to_life = function(_)
 	local function warp(dt)
-		launched_scene.rocket.warp_x = launched_scene.rocket.warp_x + W * dt
+		launched_scene.rocket.offset_x = launched_scene.rocket.offset_x + W * dt
 	end
 	local function offscreen(_)
 		return launched_scene.rocket.offset_x > W
@@ -458,6 +484,7 @@ launched_scene.back_to_life = function(_)
 	local function game_complete(_)
 		print('game done')
 	end
+	launched_scene.game_updater:set(false)
 	stop(launched_scene.rocket_mover)
 	stop(launched_scene.spawner)
 	launched_scene.deferrer.add(deferred(4, continue, warp))
@@ -491,11 +518,11 @@ launched_scene.reset = function()
 		fuel_refill = 45,
 		hit = false,
 		switch_dir = 0,
-		warp_x = 0,
 		fuel_pc = function(self)
 			return self.fuel / self.fuel_max
 		end,
 	})
+	launched_scene.game_updater = transistor(true)
 	launched_scene.rocket.offset_x = launched_scene.rocket.width + 10
 	launched_scene.objects = {}
 	launched_scene.rocket_mover = deferred(TIME_STEP, reset, launched_scene.continue_rocket_movement)
@@ -543,33 +570,36 @@ launched_scene.update = function(dt)
 	end
 	-- rocket
 	local rocket = launched_scene.rocket
-	local f_hit = 0.5
-	local burn_rate_active = 16
-	local burn_rate_passive = 4
-	rocket.fuel = math.max(0, rocket.fuel - burn_rate_passive * dt)
-	if rocket.switch_dir ~= 0 and rocket.fuel > 0 then
-		rocket.fuel = math.max(0, rocket.fuel - burn_rate_active * dt)
-		launched_scene.switch_dir_to(rocket, rocket.switch_dir)
-		rocket.switch_dir = 0
-	end
-	if rocket.fuel > 0 then
-		launched_scene.bounce(rocket)
-	end
-	if rocket.hit then
-		rocket.hit = false
-		rocket.vx = rocket.vx - math.max(0, rocket.vx * (1 - f_hit))
-	end
-	local ax = rocket.fuel > 0 and rocket.ax or rocket.gx
-	rocket.vx = math.max(0, rocket.vx + ax * dt)
-	rocket.x = rocket.x + rocket.vx * dt
-	-- colissions
-	for idx, obj in ipairs(launched_scene.objects) do
-		if launched_scene.collected(obj) then
-			obj.on_hit()
-			table.remove(launched_scene.objects, idx)
-			break
+	launched_scene.game_updater(function()
+		local f_hit = 0.5
+		local burn_rate_active = 16
+		local burn_rate_passive = 4
+		rocket.fuel = math.max(0, rocket.fuel - burn_rate_passive * dt)
+		if rocket.switch_dir ~= 0 and rocket.fuel > 0 then
+			rocket.fuel = math.max(0, rocket.fuel - burn_rate_active * dt)
+			launched_scene.switch_dir_to(rocket, rocket.switch_dir)
+			rocket.switch_dir = 0
 		end
-	end
+		if rocket.fuel > 0 then
+			launched_scene.bounce(rocket)
+		end
+		if rocket.hit then
+			rocket.hit = false
+			rocket.vx = rocket.vx - math.max(0, rocket.vx * (1 - f_hit))
+		end
+		local ax = rocket.fuel > 0 and rocket.ax or rocket.gx
+		rocket.vx = math.max(0, rocket.vx + ax * dt)
+		rocket.x = rocket.x + rocket.vx * dt
+		-- colissions
+		for idx, obj in ipairs(launched_scene.objects) do
+			if launched_scene.collected(obj) then
+				obj.on_hit()
+				table.remove(launched_scene.objects, idx)
+				break
+			end
+		end
+	end)
+	launched_scene.scroll_x = launched_scene.scroll_x + rocket.vx * dt
 	-- deferred objects
 	launched_scene.spawner:update(dt * rocket.vx)
 	launched_scene.deferrer.update(dt)
@@ -580,13 +610,13 @@ launched_scene.update = function(dt)
 	end
 	-- remove objects
 	local has_objects = table.maxn(launched_scene.objects) > 0
-	if has_objects and launched_scene.objects[1].x < rocket.x - rocket.width - rocket.offset_x then
+	if has_objects and launched_scene.objects[1].x < launched_scene.scroll_x then
 		table.remove(launched_scene.objects, 1)
 		cash = cash + 10
 	end
 	-- rewind stars
 	for _, star in ipairs(launched_scene.stars) do
-		if star.x < rocket.x/4 - rocket.width * 2 then
+		if star.x < launched_scene.scroll_x/4 then
 			launched_scene.rewind_star(star)
 		end
 	end
@@ -596,26 +626,26 @@ launched_scene.draw = function()
 	local rocket = launched_scene.rocket
 	love.graphics.translate(0, -H)
 	love.graphics.push()
-	love.graphics.translate(-rocket.x + rocket.offset_x, 0)
+	love.graphics.translate(-launched_scene.scroll_x, 0)
 	love.graphics.setColor(1, 1, 1)
 	-- stars
 	local star_scale = clamp(rocket.vx / 1000 + 1, 1, 10) + love.math.random()
 	for _, star in ipairs(launched_scene.stars) do
-		love.graphics.draw(lf.get_texture('star.png'), star.x + rocket.x * 3/4, star.y, 0, star_scale, -1)
+		love.graphics.draw(lf.get_texture('star.png'), star.x + launched_scene.scroll_x * 3/4, star.y, 0, star_scale, -1)
 	end
 	-- objects
 	local y_offset = 20
 	for _, obj in ipairs(launched_scene.objects) do
-		if obj.x > rocket.x + W then
-			local dx = obj.x - (rocket.x - rocket.width) - W
+		if obj.x > launched_scene.scroll_x + W then
+			local dx = obj.x - (launched_scene.scroll_x - rocket.width) - W
 			local scale = clamp(1 - dx / SPAWN_DISTANCE, 0, 1) * 0.75
-			obj.animation:draw(obj.image, rocket.x + W - rocket.width - 50, obj.y + y_offset, 0, scale, -scale, obj.width_2, obj.height_2)
+			obj.animation:draw(obj.image, launched_scene.scroll_x + W - obj.width, obj.y + y_offset, 0, scale, -scale, obj.width_2, obj.height_2)
 		else
 			obj.animation:draw(obj.image, obj.x, obj.y + y_offset, 0, 1, -1, 0, obj.height_2)
 		end
 	end
 	-- rocket
-	rocket.animation:draw(rocket.image, rocket.x + rocket.warp_x, rocket.y + y_offset, 0, 1, -1, rocket.width, rocket.height_2)
+	rocket.animation:draw(rocket.image, launched_scene.scroll_x + rocket.offset_x, rocket.y + y_offset, 0, 1, -1, rocket.width, rocket.height_2)
 	-- ui
 	love.graphics.pop()
 	-- fuel bar
