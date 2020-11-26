@@ -309,7 +309,7 @@ moon_scene.create_button = function(image_name, x, y, handler)
 end
 
 moon_scene.draw_button = function(btn)
-	love.graphics.draw(btn.tex, btn.x, btn.y, 0, 1, -1)
+	love.graphics.draw(btn.tex, btn.x, btn.y, 0, 1, -1, 0, btn.height)
 end
 
 moon_scene.load = function()
@@ -319,7 +319,7 @@ moon_scene.load = function()
 	-- viewport origin is at bottom, centre and goes right and up
 	lf.setup_viewport(W, -H)
 	moon_scene.buttons = clickable()
-	moon_scene.fuel_upgrade = moon_scene.create_button('up-fuel.png', 10, H-10, curry1(moon_scene.buy_upgrade, fuel_upgrade))
+	moon_scene.fuel_upgrade = moon_scene.create_button('up-fuel.png', 10, H-300-10, curry1(moon_scene.buy_upgrade, fuel))
 end
 
 moon_scene.keypressed = function(key, scancode, is_repeat)
@@ -337,6 +337,15 @@ moon_scene.keyreleased = function(key, scancode)
 		local r = moon_scene.buy_upgrade(acceleration)
 		print(r, 'now has', get_value(acceleration))
 	end
+end
+
+moon_scene.clicked = function(gx, gy)
+	local w, h = love.graphics.getPixelDimensions()
+	love.graphics.origin()
+	love.graphics.scale(w/W, h/-H)
+	love.graphics.translate(0, -H)
+	local x, y = love.graphics.transformPoint(gx, gy)
+	moon_scene.buttons.click(x, y)
 end
 
 moon_scene.update = function(dt)
@@ -623,6 +632,9 @@ end
 launched_scene.keyreleased = function(key, scancode)
 end
 
+launched_scene.clicked = function(x, y)
+end
+
 launched_scene.update = function(dt)
 	launched_scene.game_time = launched_scene.game_time + dt
 	-- objects
@@ -747,6 +759,12 @@ end
 
 love.keyreleased = function(key, scancode)
 	scene.keyreleased(key, scancode)
+end
+
+love.mousereleased = function(x, y, button, istouch, presses)
+	if button == 1 then
+		scene.clicked(x, y)
+	end
 end
 
 lf.update = function(dt)
