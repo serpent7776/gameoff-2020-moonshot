@@ -21,6 +21,11 @@ local acceleration = {
 	values = {100, 150, 250, 500},
 	costs = {1000, 1500, 2500}
 }
+local durability = {
+	current_level = 1,
+	values = {0.50, 0.55, 0.60},
+	costs = {2000, 3000}
+}
 
 local W, H, W_2, H_2
 local SPAWN_DISTANCE
@@ -331,6 +336,7 @@ moon_scene.load = function()
 	moon_scene.buttons = clickable()
 	moon_scene.fuel_upgrade = moon_scene.create_button('up-fuel.png', 10, H-300-10, curry1(moon_scene.buy_upgrade, fuel))
 	moon_scene.acceleration_upgrade = moon_scene.create_button('up-fuel.png', 350, H-300-10, curry1(moon_scene.buy_upgrade, acceleration))
+	moon_scene.durability_upgrade = moon_scene.create_button('up-fuel.png', 650, H-300-10, curry1(moon_scene.buy_upgrade, durability))
 end
 
 moon_scene.keypressed = function(key, scancode, is_repeat)
@@ -657,7 +663,7 @@ launched_scene.update = function(dt)
 	-- rocket
 	local rocket = launched_scene.rocket
 	launched_scene.game_updater(function()
-		local f_hit = 0.5
+		local f_hit = get_value(durability)
 		local burn_rate_active = 16
 		local burn_rate_passive = 4
 		rocket.fuel = math.max(0, rocket.fuel - burn_rate_passive * dt)
@@ -671,7 +677,7 @@ launched_scene.update = function(dt)
 		end
 		if rocket.hit then
 			rocket.hit = false
-			rocket.vx = rocket.vx - math.max(0, rocket.vx * (1 - f_hit))
+			rocket.vx  = rocket.vx - math.max(0, rocket.vx * f_hit)
 		end
 		local ax = rocket.fuel > 0 and rocket.ax or rocket.gx
 		rocket.vx = math.max(0, rocket.vx + ax * dt)
