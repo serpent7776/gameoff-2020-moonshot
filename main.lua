@@ -113,7 +113,7 @@ end
 local function clickable()
 	local objects = {}
 	local handlers = {}
-	return {
+	local t =  {
 		add = function(obj, handler)
 			table.insert(objects, obj)
 			table.insert(handlers, handler)
@@ -126,6 +126,16 @@ local function clickable()
 			end
 		end,
 	}
+	local mt = {
+		__next = function(_, k)
+			return next(objects, k)
+		end,
+	}
+	return setmetatable(t, mt)
+end
+
+local function _next(t, k)
+	return getmetatable(t).__next(t, k)
 end
 
 local function button(image_name, x, y)
@@ -320,6 +330,7 @@ moon_scene.load = function()
 	lf.setup_viewport(W, -H)
 	moon_scene.buttons = clickable()
 	moon_scene.fuel_upgrade = moon_scene.create_button('up-fuel.png', 10, H-300-10, curry1(moon_scene.buy_upgrade, fuel))
+	moon_scene.acceleration_upgrade = moon_scene.create_button('up-fuel.png', 350, H-300-10, curry1(moon_scene.buy_upgrade, acceleration))
 end
 
 moon_scene.keypressed = function(key, scancode, is_repeat)
@@ -358,7 +369,9 @@ moon_scene.draw = function()
 	local bg = moon_scene.bg
 	love.graphics.draw(bg, 0, 0, 0, 1, -1, bg:getWidth()/2, bg:getHeight())
 	love.graphics.pop()
-	moon_scene.draw_button(moon_scene.fuel_upgrade)
+	for _,v in _next, moon_scene.buttons do
+		moon_scene.draw_button(v)
+	end
 end
 
 --[[
