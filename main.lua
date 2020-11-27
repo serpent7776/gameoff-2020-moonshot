@@ -299,6 +299,14 @@ local function get_value(upgrade)
 	return upgrade.values[upgrade.current_level]
 end
 
+local function get_level(upgrade)
+	return upgrade.current_level
+end
+
+local function get_max_level(upgrade)
+	return #upgrade.values
+end
+
 --[[
    [ moon_scene
    ]]
@@ -317,14 +325,19 @@ moon_scene.buy_upgrade = function(upgrade)
 	return false
 end
 
-moon_scene.create_button = function(image_name, x, y, handler)
+moon_scene.create_button = function(image_name, x, y, upgrade)
 	local btn = button(image_name, x, y)
-	moon_scene.buttons.add(btn, handler)
+	btn.upgrade = upgrade
+	moon_scene.buttons.add(btn, curry1(moon_scene.buy_upgrade, upgrade))
 	return btn
 end
 
 moon_scene.draw_button = function(btn)
 	love.graphics.draw(btn.tex, btn.x, btn.y, 0, 1, -1, 0, btn.height)
+	local current = get_level(btn.upgrade)
+	local max = get_max_level(btn.upgrade)
+	local str = string.format('%d/%d', current, max)
+	love.graphics.printf(str, btn.x+btn.width/2, btn.y, 100, 'center', 0, 1, -1)
 end
 
 moon_scene.load = function()
@@ -334,9 +347,9 @@ moon_scene.load = function()
 	-- viewport origin is at bottom, centre and goes right and up
 	lf.setup_viewport(W, -H)
 	moon_scene.buttons = clickable()
-	moon_scene.fuel_upgrade = moon_scene.create_button('up-fuel.png', 25, H-150-10, curry1(moon_scene.buy_upgrade, fuel))
-	moon_scene.acceleration_upgrade = moon_scene.create_button('up-fuel.png', 350, H-150-10, curry1(moon_scene.buy_upgrade, acceleration))
-	moon_scene.durability_upgrade = moon_scene.create_button('up-fuel.png', 650, H-150-10, curry1(moon_scene.buy_upgrade, durability))
+	moon_scene.fuel_upgrade = moon_scene.create_button('up-fuel.png', 25, H-150-10, fuel)
+	moon_scene.acceleration_upgrade = moon_scene.create_button('up-fuel.png', 350, H-150-10, acceleration)
+	moon_scene.durability_upgrade = moon_scene.create_button('up-fuel.png', 650, H-150-10, durability)
 end
 
 moon_scene.keypressed = function(key, scancode, is_repeat)
