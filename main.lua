@@ -508,7 +508,7 @@ end
 
 launched_scene.collected = function(obj)
 	local rocket = launched_scene.rocket
-	local rocket_x = rocket.x - rocket.hitbox_offset_x
+	local rocket_x = rocket.x + rocket.offset_x - rocket.hitbox_offset_x
 	local rocket_width = rocket.width - rocket.hitbox_offset_x
 	local dx = obj.x - rocket_x
 	local x = dx < 0 and -dx < obj.width + rocket_width
