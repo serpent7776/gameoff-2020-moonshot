@@ -334,9 +334,9 @@ moon_scene.load = function()
 	-- viewport origin is at bottom, centre and goes right and up
 	lf.setup_viewport(W, -H)
 	moon_scene.buttons = clickable()
-	moon_scene.fuel_upgrade = moon_scene.create_button('up-fuel.png', 10, H-300-10, curry1(moon_scene.buy_upgrade, fuel))
-	moon_scene.acceleration_upgrade = moon_scene.create_button('up-fuel.png', 350, H-300-10, curry1(moon_scene.buy_upgrade, acceleration))
-	moon_scene.durability_upgrade = moon_scene.create_button('up-fuel.png', 650, H-300-10, curry1(moon_scene.buy_upgrade, durability))
+	moon_scene.fuel_upgrade = moon_scene.create_button('up-fuel.png', 25, H-150-10, curry1(moon_scene.buy_upgrade, fuel))
+	moon_scene.acceleration_upgrade = moon_scene.create_button('up-fuel.png', 350, H-150-10, curry1(moon_scene.buy_upgrade, acceleration))
+	moon_scene.durability_upgrade = moon_scene.create_button('up-fuel.png', 650, H-150-10, curry1(moon_scene.buy_upgrade, durability))
 end
 
 moon_scene.keypressed = function(key, scancode, is_repeat)
