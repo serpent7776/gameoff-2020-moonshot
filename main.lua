@@ -409,6 +409,8 @@ moon_scene.draw = function()
 	for _,v in _next, moon_scene.buttons do
 		moon_scene.draw_button(v)
 	end
+	local wallet = string.format('$%s', cash)
+	love.graphics.printf(wallet, 25, 25, 100, 'left', 0, 1, -1)
 end
 
 --[[
