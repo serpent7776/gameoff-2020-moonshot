@@ -356,6 +356,9 @@ title_scene.keypressed = function(key, scancode, is_repeat)
 end
 
 title_scene.keyreleased = function(key, scancode)
+	if key == 'space' then
+		switch_to(moon_scene)
+	end
 end
 
 title_scene.clicked = function(gx, gy)
