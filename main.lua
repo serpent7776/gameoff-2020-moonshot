@@ -339,9 +339,17 @@ moon_scene.buy_upgrade = function(upgrade)
 end
 
 moon_scene.create_button = function(image_name, x, y, upgrade)
+	local handler = function()
+		local ok = moon_scene.buy_upgrade(upgrade)
+		if ok then
+			lf.play_sound('click.wav')
+		else
+			lf.play_sound('no.wav')
+		end
+	end
 	local btn = button(image_name, x, y)
 	btn.upgrade = upgrade
-	moon_scene.buttons.add(btn, curry1(moon_scene.buy_upgrade, upgrade))
+	moon_scene.buttons.add(btn, handler)
 	return btn
 end
 
@@ -562,14 +570,17 @@ end
 
 launched_scene.meteorite_hit = function()
 	launched_scene.rocket.hit = true
+	lf.play_sound('hit.wav')
 end
 
 launched_scene.fuel_meteorite_hit = function()
 	launched_scene.fuel_refill()
+	lf.play_sound('pick.wav')
 end
 
 launched_scene.cash_meteorite_hit = function()
 	launched_scene.earn_cash(100)
+	lf.play_sound('pick.wav')
 end
 
 launched_scene.bounce = function(obj)
