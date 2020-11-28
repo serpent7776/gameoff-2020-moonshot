@@ -343,8 +343,10 @@ moon_scene.draw_button = function(btn)
 	local level_str = string.format('%d/%d', current, max)
 	love.graphics.printf(level_str, btn.x, btn.y, 100, 'right', 0, 1, -1)
 	local cost = get_cost(btn.upgrade)
-	local cost_str = string.format('$%d', cost)
-	love.graphics.printf(cost_str, btn.x, btn.y-20, 100, 'right', 0, 1, -1)
+	if cost then
+		local cost_str = string.format('$%d', cost)
+		love.graphics.printf(cost_str, btn.x, btn.y-20, 100, 'right', 0, 1, -1)
+	end
 end
 
 moon_scene.load = function()
