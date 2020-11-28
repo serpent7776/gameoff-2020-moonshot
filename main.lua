@@ -42,6 +42,7 @@ local dummy_grid
 
 local scene
 
+local title_scene = {}
 local moon_scene = {}
 local launched_scene = {}
 
@@ -115,6 +116,18 @@ local function contains(obj, x, y)
 		return false
 	end
 	if y < obj.y or y > obj.y + obj.height then
+		return false
+	end
+	return true
+end
+
+local function contains_centre(obj, x, y)
+	local dx = math.abs(obj.x - x)
+	if dx > obj.width/2 then
+		return false
+	end
+	local dy = math.abs(obj.y - y)
+	if dy > obj.height/2 then
 		return false
 	end
 	return true
@@ -318,6 +331,41 @@ end
 
 local function get_cost(upgrade)
 	return upgrade.costs[upgrade.current_level]
+end
+
+--[[
+   [ title_scene
+   ]]
+
+title_scene.load = function()
+	title_scene.image = love.graphics.newImage('assets/cover.png')
+	title_scene.launch = button('launch.png', W/2, H*3/4)
+end
+
+title_scene.update = function(dt)
+end
+
+title_scene.draw = function()
+	local im = title_scene.image
+	local start = title_scene.launch
+	love.graphics.draw(im, 0, 0, 0, W/im:getWidth(), H/im:getHeight())
+	love.graphics.draw(start.tex, start.x, start.y, 0, 1, 1, start.width/2, start.height/2)
+end
+
+title_scene.keypressed = function(key, scancode, is_repeat)
+end
+
+title_scene.keyreleased = function(key, scancode)
+end
+
+title_scene.clicked = function(gx, gy)
+	local w, h = love.graphics.getPixelDimensions()
+	love.graphics.origin()
+	love.graphics.scale(w/W, h/H)
+	local x, y = love.graphics.transformPoint(gx, gy)
+	if contains_centre(title_scene.launch, x, y) then
+		switch_to(moon_scene)
+	end
 end
 
 --[[
@@ -812,7 +860,7 @@ lf.init = function()
 	W, H = 800, 600
 	W_2, H_2 = W / 2, H / 2
 	SPAWN_DISTANCE = W * 4
-	switch_to(moon_scene)
+	switch_to(title_scene)
 	gen_grids()
 	love.graphics.setBackgroundColor(0, 0, 30 / 255)
 end
