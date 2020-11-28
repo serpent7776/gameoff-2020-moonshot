@@ -16,6 +16,11 @@ local fuel = {
 	values = {100, 150, 250, 450, 750},
 	costs = {750, 1500, 2500, 4500}
 }
+local fuel_refill = {
+	current_level = 1, -- check level of `fuel' upgrade
+	values = {45, 75, 100, 150, 225},
+	costs = {0, 0, 0, 0} -- not upgradeable directly
+}
 local acceleration = {
 	current_level = 1,
 	values = {100, 150, 250, 500},
@@ -299,6 +304,10 @@ local function get_value(upgrade)
 	return upgrade.values[upgrade.current_level]
 end
 
+local function get_value_2(upgrade, level)
+	return upgrade.values[level]
+end
+
 local function get_level(upgrade)
 	return upgrade.current_level
 end
@@ -540,7 +549,9 @@ end
 
 launched_scene.fuel_refill = function()
 	local rocket = launched_scene.rocket
-	rocket.fuel = math.min(rocket.fuel + rocket.fuel_refill, rocket.fuel_max)
+	local level = get_level(fuel)
+	local refill = get_value_2(fuel_refill, level)
+	rocket.fuel = math.min(rocket.fuel + refill, rocket.fuel_max)
 end
 
 launched_scene.earn_cash = function(boost)
@@ -626,7 +637,6 @@ launched_scene.reset = function()
 		gx = -250,
 		fuel_max = get_value(fuel),
 		fuel = get_value(fuel),
-		fuel_refill = 45,
 		hit = false,
 		switch_dir = 0,
 		fuel_pc = function(self)
