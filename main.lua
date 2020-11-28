@@ -439,7 +439,7 @@ moon_scene.load = function()
 	moon_scene.fuel_upgrade = moon_scene.create_upgrade_button('up-fuel.png', 25, H-150-10, fuel)
 	moon_scene.acceleration_upgrade = moon_scene.create_upgrade_button('up-acceleration.png', 350, H-150-10, acceleration)
 	moon_scene.durability_upgrade = moon_scene.create_upgrade_button('up-durability.png', 650, H-150-10, durability)
-	moon_scene.launch = moon_scene.create_button('launch.png', W/2-25, H*1/4-25, curry1(switch_to, launched_scene))
+	moon_scene.launch = moon_scene.create_button('launch.png', W/2-123, H*1/4-23, curry1(switch_to, launched_scene))
 end
 
 moon_scene.keypressed = function(key, scancode, is_repeat)
