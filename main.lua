@@ -443,13 +443,11 @@ moon_scene.keyreleased = function(key, scancode)
 	if key == 'space' then
 		switch_to(launched_scene)
 	elseif key == '1' then
-		print('buying max fuel')
-		local r = moon_scene.buy_upgrade(fuel)
-		print(r, 'now has', get_value(fuel))
+		moon_scene.buy_upgrade(fuel)
 	elseif key == '2' then
-		print('buying acceleration')
-		local r = moon_scene.buy_upgrade(acceleration)
-		print(r, 'now has', get_value(acceleration))
+		moon_scene.buy_upgrade(acceleration)
+	elseif key == '3' then
+		moon_scene.buy_upgrade(durability)
 	end
 end
 
