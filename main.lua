@@ -307,6 +307,10 @@ local function get_max_level(upgrade)
 	return #upgrade.values
 end
 
+local function get_cost(upgrade)
+	return upgrade.costs[upgrade.current_level]
+end
+
 --[[
    [ moon_scene
    ]]
@@ -336,8 +340,11 @@ moon_scene.draw_button = function(btn)
 	love.graphics.draw(btn.tex, btn.x, btn.y, 0, 1, -1, 0, btn.height)
 	local current = get_level(btn.upgrade)
 	local max = get_max_level(btn.upgrade)
-	local str = string.format('%d/%d', current, max)
-	love.graphics.printf(str, btn.x+btn.width/2, btn.y, 100, 'center', 0, 1, -1)
+	local level_str = string.format('%d/%d', current, max)
+	love.graphics.printf(level_str, btn.x, btn.y, 100, 'right', 0, 1, -1)
+	local cost = get_cost(btn.upgrade)
+	local cost_str = string.format('$%d', cost)
+	love.graphics.printf(cost_str, btn.x, btn.y-20, 100, 'right', 0, 1, -1)
 end
 
 moon_scene.load = function()
