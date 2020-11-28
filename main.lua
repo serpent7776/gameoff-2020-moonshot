@@ -386,7 +386,13 @@ moon_scene.buy_upgrade = function(upgrade)
 	return false
 end
 
-moon_scene.create_button = function(image_name, x, y, upgrade)
+moon_scene.create_button = function(image_name, x, y, handler)
+	local btn = button(image_name, x, y)
+	moon_scene.buttons.add(btn, handler)
+	return btn
+end
+
+moon_scene.create_upgrade_button = function(image_name, x, y, upgrade)
 	local handler = function()
 		local ok = moon_scene.buy_upgrade(upgrade)
 		if ok then
@@ -395,14 +401,17 @@ moon_scene.create_button = function(image_name, x, y, upgrade)
 			lf.play_sound('no.wav')
 		end
 	end
-	local btn = button(image_name, x, y)
+	local btn = moon_scene.create_button(image_name, x, y, handler)
 	btn.upgrade = upgrade
-	moon_scene.buttons.add(btn, handler)
 	return btn
 end
 
 moon_scene.draw_button = function(btn)
 	love.graphics.draw(btn.tex, btn.x, btn.y, 0, 1, -1, 0, btn.height)
+end
+
+moon_scene.draw_upgrade_button = function(btn)
+	moon_scene.draw_button(btn)
 	local current = get_level(btn.upgrade)
 	local max = get_max_level(btn.upgrade)
 	local level_str = string.format('%d/%d', current, max)
@@ -421,9 +430,10 @@ moon_scene.load = function()
 	-- viewport origin is at bottom, centre and goes right and up
 	lf.setup_viewport(W, -H)
 	moon_scene.buttons = clickable()
-	moon_scene.fuel_upgrade = moon_scene.create_button('up-fuel.png', 25, H-150-10, fuel)
-	moon_scene.acceleration_upgrade = moon_scene.create_button('up-acceleration.png', 350, H-150-10, acceleration)
-	moon_scene.durability_upgrade = moon_scene.create_button('up-durability.png', 650, H-150-10, durability)
+	moon_scene.fuel_upgrade = moon_scene.create_upgrade_button('up-fuel.png', 25, H-150-10, fuel)
+	moon_scene.acceleration_upgrade = moon_scene.create_upgrade_button('up-acceleration.png', 350, H-150-10, acceleration)
+	moon_scene.durability_upgrade = moon_scene.create_upgrade_button('up-durability.png', 650, H-150-10, durability)
+	moon_scene.launch = moon_scene.create_button('launch.png', W/2-25, H*1/4-25, curry1(switch_to, launched_scene))
 end
 
 moon_scene.keypressed = function(key, scancode, is_repeat)
@@ -462,9 +472,10 @@ moon_scene.draw = function()
 	local bg = moon_scene.bg
 	love.graphics.draw(bg, 0, 0, 0, 1, -1, bg:getWidth()/2, bg:getHeight())
 	love.graphics.pop()
-	for _,v in _next, moon_scene.buttons do
-		moon_scene.draw_button(v)
-	end
+	moon_scene.draw_upgrade_button(moon_scene.fuel_upgrade)
+	moon_scene.draw_upgrade_button(moon_scene.acceleration_upgrade)
+	moon_scene.draw_upgrade_button(moon_scene.durability_upgrade)
+	moon_scene.draw_button(moon_scene.launch)
 	local wallet = string.format('$%s', cash)
 	love.graphics.printf(wallet, 25, 25, 100, 'left', 0, 1, -1)
 end
