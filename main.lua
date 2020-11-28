@@ -39,6 +39,7 @@ local asteroid_grid
 local fuel_grid
 local cash_grid
 local dummy_grid
+local game_time
 
 local scene
 
@@ -736,7 +737,6 @@ launched_scene.reset = function()
 end
 
 launched_scene.load = function()
-	launched_scene.game_time = 0
 	-- viewport origin is at left, bottom and goes right and up
 	lf.setup_viewport(W, -H)
 	launched_scene.reset()
@@ -762,7 +762,6 @@ launched_scene.clicked = function(x, y)
 end
 
 launched_scene.update = function(dt)
-	launched_scene.game_time = launched_scene.game_time + dt
 	-- objects
 	for _, obj in ipairs(launched_scene.objects) do
 		obj.x = obj.x - obj.vx * dt
@@ -770,6 +769,7 @@ launched_scene.update = function(dt)
 	-- rocket
 	local rocket = launched_scene.rocket
 	launched_scene.game_updater(function()
+		game_time = game_time + dt
 		local f_hit = get_value(durability)
 		local burn_rate_active = 16
 		local burn_rate_passive = 4
@@ -861,9 +861,10 @@ launched_scene.draw = function()
 	love.graphics.rectangle('fill', 10, 10, distance_width, 1)
 	love.graphics.circle('fill', 10+distance_travelled, 10, 5)
 	-- meters
-	love.graphics.print(string.format("%.2f", rocket.x), 10, H-35, 0, 1, -1)
-	love.graphics.print(string.format("%.2f", rocket.vx), 200, H-35, 0, 1, -1)
-	love.graphics.print(string.format("%.2f", cash), 300, H-35, 0, 1, -1)
+	local wallet = string.format('$%s', cash)
+	love.graphics.print(wallet, 10, H-35, 0, 1, -1)
+	local time = string.format('%.1f', game_time)
+	love.graphics.printf(time, 0, H-35, W-10, 'right', 0, 1, -1)
 end
 
 --[[
@@ -871,6 +872,7 @@ end
    ]]
 
 lf.init = function()
+	game_time = 0
 	W, H = 800, 600
 	W_2, H_2 = W / 2, H / 2
 	SPAWN_DISTANCE = W * 4
