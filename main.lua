@@ -366,8 +366,8 @@ moon_scene.load = function()
 	lf.setup_viewport(W, -H)
 	moon_scene.buttons = clickable()
 	moon_scene.fuel_upgrade = moon_scene.create_button('up-fuel.png', 25, H-150-10, fuel)
-	moon_scene.acceleration_upgrade = moon_scene.create_button('up-fuel.png', 350, H-150-10, acceleration)
-	moon_scene.durability_upgrade = moon_scene.create_button('up-fuel.png', 650, H-150-10, durability)
+	moon_scene.acceleration_upgrade = moon_scene.create_button('up-acceleration.png', 350, H-150-10, acceleration)
+	moon_scene.durability_upgrade = moon_scene.create_button('up-durability.png', 650, H-150-10, durability)
 end
 
 moon_scene.keypressed = function(key, scancode, is_repeat)
