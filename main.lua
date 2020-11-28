@@ -386,6 +386,15 @@ moon_scene.buy_upgrade = function(upgrade)
 	return false
 end
 
+moon_scene.upgrade = function(upgrade)
+	local ok = moon_scene.buy_upgrade(upgrade)
+	if ok then
+		lf.play_sound('click.wav')
+	else
+		lf.play_sound('no.wav')
+	end
+end
+
 moon_scene.create_button = function(image_name, x, y, handler)
 	local btn = button(image_name, x, y)
 	moon_scene.buttons.add(btn, handler)
@@ -393,14 +402,7 @@ moon_scene.create_button = function(image_name, x, y, handler)
 end
 
 moon_scene.create_upgrade_button = function(image_name, x, y, upgrade)
-	local handler = function()
-		local ok = moon_scene.buy_upgrade(upgrade)
-		if ok then
-			lf.play_sound('click.wav')
-		else
-			lf.play_sound('no.wav')
-		end
-	end
+	local handler = curry1(moon_scene.upgrade, upgrade)
 	local btn = moon_scene.create_button(image_name, x, y, handler)
 	btn.upgrade = upgrade
 	return btn
@@ -443,11 +445,11 @@ moon_scene.keyreleased = function(key, scancode)
 	if key == 'space' then
 		switch_to(launched_scene)
 	elseif key == '1' then
-		moon_scene.buy_upgrade(fuel)
+		moon_scene.upgrade(fuel)
 	elseif key == '2' then
-		moon_scene.buy_upgrade(acceleration)
+		moon_scene.upgrade(acceleration)
 	elseif key == '3' then
-		moon_scene.buy_upgrade(durability)
+		moon_scene.upgrade(durability)
 	end
 end
 
