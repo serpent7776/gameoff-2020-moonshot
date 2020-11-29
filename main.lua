@@ -397,6 +397,7 @@ moon_scene.upgrade = function(upgrade)
 	else
 		lf.play_sound('no.wav')
 	end
+	moon_scene.update_upgrade_buttons()
 end
 
 moon_scene.create_button = function(image_name, x, y, handler)
@@ -405,11 +406,24 @@ moon_scene.create_button = function(image_name, x, y, handler)
 	return btn
 end
 
-moon_scene.create_upgrade_button = function(image_name, x, y, upgrade)
+moon_scene.create_upgrade_button = function(name, x, y, upgrade)
 	local handler = curry1(moon_scene.upgrade, upgrade)
-	local btn = moon_scene.create_button(image_name, x, y, handler)
+	local btn = moon_scene.create_button('up-dummy.png', x, y, handler) -- image name will be updated in update_upgrade_button
 	btn.upgrade = upgrade
+	btn.name = name
 	return btn
+end
+
+moon_scene.update_upgrade_button = function(button)
+	local level = get_level(button.upgrade)
+	local image = string.format('up-%s-%d.png', button.name, level)
+	button.tex = lf.get_texture(image)
+end
+
+moon_scene.update_upgrade_buttons = function()
+	moon_scene.update_upgrade_button(moon_scene.fuel_upgrade)
+	moon_scene.update_upgrade_button(moon_scene.acceleration_upgrade)
+	moon_scene.update_upgrade_button(moon_scene.durability_upgrade)
 end
 
 moon_scene.draw_button = function(btn)
@@ -436,10 +450,11 @@ moon_scene.load = function()
 	-- viewport origin is at bottom, centre and goes right and up
 	lf.setup_viewport(W, -H)
 	moon_scene.buttons = clickable()
-	moon_scene.fuel_upgrade = moon_scene.create_upgrade_button('up-fuel.png', 25, H-150-10, fuel)
-	moon_scene.acceleration_upgrade = moon_scene.create_upgrade_button('up-acceleration.png', 350, H-150-10, acceleration)
-	moon_scene.durability_upgrade = moon_scene.create_upgrade_button('up-durability.png', 650, H-150-10, durability)
+	moon_scene.fuel_upgrade = moon_scene.create_upgrade_button('fuel', 25, H-150-10, fuel)
+	moon_scene.acceleration_upgrade = moon_scene.create_upgrade_button('acceleration', 350, H-150-10, acceleration)
+	moon_scene.durability_upgrade = moon_scene.create_upgrade_button('durability', 650, H-150-10, durability)
 	moon_scene.launch = moon_scene.create_button('launch.png', W/2-123, H*1/4-23, curry1(switch_to, launched_scene))
+	moon_scene.update_upgrade_buttons()
 end
 
 moon_scene.keypressed = function(key, scancode, is_repeat)
