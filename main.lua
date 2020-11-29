@@ -597,7 +597,7 @@ end
 
 launched_scene.spawn_object = function(_)
 	launched_scene.last_fuel_spawn = launched_scene.last_fuel_spawn + 1
-	local w_fuel = math.min(10, launched_scene.last_fuel_spawn / 6)
+	local w_fuel = math.min(10, math.floor(launched_scene.last_fuel_spawn / 6))
 	local w_cash = 5
 	local w_meteorite = 90
 	local w_sum = w_fuel + w_cash + w_meteorite
