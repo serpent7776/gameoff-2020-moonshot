@@ -1,7 +1,6 @@
 local lf = require("lib/love-frame")
 local anim8 = require("lib/anim8/anim8")
 
-local PI_2 = math.pi / 2
 local Y_STEP = 50
 local Y_INDEX_MIN = 1
 local Y_INDEX_MAX = 10
@@ -38,7 +37,6 @@ local rocket_grid
 local asteroid_grid
 local fuel_grid
 local cash_grid
-local dummy_grid
 local game_time
 
 local scene
@@ -60,10 +58,6 @@ end
 
 local function lerp(x, y, a)
 	return y * a + x * (1 - a)
-end
-
-local function sinc(x, y, a)
-	return lerp(x, y, math.sin(a * math.pi / 2))
 end
 
 local function clamp(x, min, max)
@@ -156,10 +150,6 @@ local function clickable()
 		end,
 	}
 	return setmetatable(t, mt)
-end
-
-local function _next(t, k)
-	return getmetatable(t).__next(t, k)
 end
 
 local function button(image_name, x, y)
@@ -277,7 +267,7 @@ local function stop(deferred)
 end
 
 local function group()
-	objects = {}
+	local objects = {}
 	return {
 		add = function(deferred)
 			table.insert(objects, deferred)
@@ -307,7 +297,6 @@ local function gen_grids()
 	asteroid_grid = anim8.newGrid(50, 50, 250, 400)
 	fuel_grid = anim8.newGrid(50, 50, 250, 200)
 	cash_grid = anim8.newGrid(50, 50, 250, 50)
-	dummy_grid = anim8.newGrid(50, 50, 50, 50)
 end
 
 --[[
@@ -588,7 +577,7 @@ local function make_randomizer()
 			local v = love.math.random(1, self.weight_total)
 			for idx, weight in ipairs(self.weights) do
 				if v < weight then
-					return things[idx]
+					return self.things[idx]
 				end
 			end
 		end,
