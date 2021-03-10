@@ -1,6 +1,8 @@
 local lf = require("lib/love-frame")
 local anim8 = require("lib/anim8/anim8")
 
+local screens = lf.screens()
+
 local Y_STEP = 50
 local Y_INDEX_MIN = 1
 local Y_INDEX_MAX = 10
@@ -38,8 +40,6 @@ local asteroid_grid
 local fuel_grid
 local cash_grid
 local game_time
-
-local scene
 
 local title_scene = {}
 local moon_scene = {}
@@ -163,14 +163,6 @@ local function button(image_name, x, y)
 	}
 end
 
-local function table_copy(src)
-	local dst = {}
-	for idx, value in pairs(src) do
-		dst[idx] = value
-	end
-	return dst
-end
-
 local function table_sum(tab)
 	local sum = 0
 	for _, val in ipairs(tab) do
@@ -280,14 +272,6 @@ local function group()
 	}
 end
 
-local function switch_to(new_scene)
-	if scene and scene.unload then
-		scene.unload()
-	end
-	scene = table_copy(new_scene)
-	scene.load()
-end
-
 --[[
    [ loading
    ]]
@@ -327,7 +311,7 @@ end
    [ title_scene
    ]]
 
-title_scene.load = function()
+title_scene.show = function()
 	title_scene.image = love.graphics.newImage('assets/cover.png')
 	title_scene.launch = button('launch.png', W/2, H*3/4)
 end
@@ -347,7 +331,7 @@ end
 
 title_scene.keyreleased = function(key, scancode)
 	if key == 'space' then
-		switch_to(moon_scene)
+		lf.switch_to(screens.moon)
 	end
 end
 
@@ -357,7 +341,7 @@ title_scene.clicked = function(gx, gy)
 	love.graphics.scale(w/W, h/H)
 	local x, y = love.graphics.transformPoint(gx, gy)
 	if contains_centre(title_scene.launch, x, y) then
-		switch_to(moon_scene)
+		lf.switch_to(screens.moon)
 	end
 end
 
@@ -432,7 +416,7 @@ moon_scene.draw_upgrade_button = function(btn)
 	end
 end
 
-moon_scene.load = function()
+moon_scene.show = function()
 	launched_scene.last_fuel_spawn = 0
 	launched_scene.scroll_x = 0
 	moon_scene.prepare_data()
@@ -442,7 +426,7 @@ moon_scene.load = function()
 	moon_scene.fuel_upgrade = moon_scene.create_upgrade_button('fuel', 25, H-150-10, fuel)
 	moon_scene.acceleration_upgrade = moon_scene.create_upgrade_button('acceleration', 350, H-150-10, acceleration)
 	moon_scene.durability_upgrade = moon_scene.create_upgrade_button('durability', 650, H-150-10, durability)
-	moon_scene.launch = moon_scene.create_button('launch.png', W/2-123, H*1/4-23, curry1(switch_to, launched_scene))
+	moon_scene.launch = moon_scene.create_button('launch.png', W/2-123, H*1/4-23, curry1(lf.switch_to, launched_scene))
 	moon_scene.update_upgrade_buttons()
 end
 
@@ -451,7 +435,7 @@ end
 
 moon_scene.keyreleased = function(key, scancode)
 	if key == 'space' then
-		switch_to(launched_scene)
+		lf.switch_to(screens.launched)
 	elseif key == '1' then
 		moon_scene.upgrade(fuel)
 	elseif key == '2' then
@@ -673,7 +657,7 @@ launched_scene.run_completed = function()
 end
 
 launched_scene.to_the_moon = function(_)
-	switch_to(moon_scene)
+	lf.switch_to(screens.moon)
 end
 
 launched_scene.back_to_life = function(_)
@@ -740,14 +724,14 @@ launched_scene.reset = function()
 	rep(STARS_COUNT, launched_scene.spawn_star)
 end
 
-launched_scene.load = function()
+launched_scene.show = function()
 	-- viewport origin is at left, bottom and goes right and up
 	lf.setup_viewport(W, -H)
 	launched_scene.reset()
 	lf.play_music('900652_pawles22---Run-2H-Challeng.mp3')
 end
 
-launched_scene.unload = function()
+launched_scene.hide = function()
 	lf.stop_music()
 end
 
@@ -880,29 +864,32 @@ lf.init = function()
 	W, H = 800, 600
 	W_2, H_2 = W / 2, H / 2
 	SPAWN_DISTANCE = W * 4
-	switch_to(title_scene)
 	gen_grids()
 	love.graphics.setBackgroundColor(0, 0, 30 / 255)
+	lf.add_screen('title', title_scene)
+	lf.add_screen('moon', moon_scene)
+	lf.add_screen('launched', launched_scene)
+	lf.switch_to(screens.title)
 end
 
 love.keypressed = function(key, scancode, is_repeat)
-	scene.keypressed(key, scancode, is_repeat)
+	lf.current_screen().keypressed(key, scancode, is_repeat)
 end
 
 love.keyreleased = function(key, scancode)
-	scene.keyreleased(key, scancode)
+	lf.current_screen().keyreleased(key, scancode)
 end
 
 love.mousereleased = function(x, y, button, istouch, presses)
 	if button == 1 then
-		scene.clicked(x, y)
+		lf.current_screen().clicked(x, y)
 	end
 end
 
 lf.update = function(dt)
-	scene.update(dt)
+	lf.current_screen().update(dt)
 end
 
 lf.draw = function()
-	scene.draw()
+	lf.current_screen().draw()
 end
