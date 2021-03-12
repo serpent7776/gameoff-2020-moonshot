@@ -11,27 +11,29 @@ local DESTINATION_DISTANCE = 1000000
 local STARS_COUNT = 25
 
 -- upgrades
-local cash = 0
-local fuel = {
-	current_level = 1,
-	values = {100, 150, 250, 450, 750},
-	costs = {750, 1500, 2500, 4500}
-}
-local fuel_refill = {
-	current_level = 1, -- check level of `fuel' upgrade
-	values = {45, 75, 100, 150, 225},
-	costs = {0, 0, 0, 0} -- not upgradeable directly
-}
-local acceleration = {
-	current_level = 1,
-	values = {100, 150, 250, 500},
-	costs = {1000, 1500, 2500}
-}
-local durability = {
-	current_level = 1,
-	values = {0.50, 0.55, 0.60},
-	costs = {2000, 3000}
-}
+local v = lf.data({
+	cash = 0,
+	fuel = {
+		current_level = 1,
+		values = {100, 150, 250, 450, 750},
+		costs = {750, 1500, 2500, 4500}
+	},
+	fuel_refill = {
+		current_level = 1, -- check level of `fuel' upgrade
+		values = {45, 75, 100, 150, 225},
+		costs = {0, 0, 0, 0} -- not upgradeable directly
+	},
+	acceleration = {
+		current_level = 1,
+		values = {100, 150, 250, 500},
+		costs = {1000, 1500, 2500}
+	},
+	durability = {
+		current_level = 1,
+		values = {0.50, 0.55, 0.60},
+		costs = {2000, 3000}
+	},
+})
 
 local W, H, W_2, H_2
 local SPAWN_DISTANCE
@@ -355,8 +357,8 @@ end
 
 moon_scene.buy_upgrade = function(upgrade)
 	local can_upgrade = upgrade.current_level < #upgrade.values
-	if can_upgrade and cash >= upgrade.costs[upgrade.current_level] then
-		cash = cash - upgrade.costs[upgrade.current_level]
+	if can_upgrade and v.cash >= upgrade.costs[upgrade.current_level] then
+		v.cash = v.cash - upgrade.costs[upgrade.current_level]
 		upgrade.current_level = upgrade.current_level + 1
 		return true
 	end
@@ -423,9 +425,9 @@ moon_scene.show = function()
 	-- viewport origin is at bottom, centre and goes right and up
 	lf.setup_viewport(W, -H)
 	moon_scene.buttons = clickable()
-	moon_scene.fuel_upgrade = moon_scene.create_upgrade_button('fuel', 25, H-150-10, fuel)
-	moon_scene.acceleration_upgrade = moon_scene.create_upgrade_button('acceleration', 350, H-150-10, acceleration)
-	moon_scene.durability_upgrade = moon_scene.create_upgrade_button('durability', 650, H-150-10, durability)
+	moon_scene.fuel_upgrade = moon_scene.create_upgrade_button('fuel', 25, H-150-10, v.fuel)
+	moon_scene.acceleration_upgrade = moon_scene.create_upgrade_button('acceleration', 350, H-150-10, v.acceleration)
+	moon_scene.durability_upgrade = moon_scene.create_upgrade_button('durability', 650, H-150-10, v.durability)
 	moon_scene.launch = moon_scene.create_button('launch.png', W/2-123, H*1/4-23, curry1(lf.switch_to, launched_scene))
 	moon_scene.update_upgrade_buttons()
 end
@@ -437,11 +439,11 @@ moon_scene.keyreleased = function(key, scancode)
 	if key == 'space' then
 		lf.switch_to(screens.launched)
 	elseif key == '1' then
-		moon_scene.upgrade(fuel)
+		moon_scene.upgrade(v.fuel)
 	elseif key == '2' then
-		moon_scene.upgrade(acceleration)
+		moon_scene.upgrade(v.acceleration)
 	elseif key == '3' then
-		moon_scene.upgrade(durability)
+		moon_scene.upgrade(v.durability)
 	end
 end
 
@@ -468,7 +470,7 @@ moon_scene.draw = function()
 	moon_scene.draw_upgrade_button(moon_scene.acceleration_upgrade)
 	moon_scene.draw_upgrade_button(moon_scene.durability_upgrade)
 	moon_scene.draw_button(moon_scene.launch)
-	local wallet = string.format('$%s', cash)
+	local wallet = string.format('$%s', v.cash)
 	love.graphics.printf(wallet, 25, 25, 100, 'left', 0, 1, -1)
 end
 
@@ -610,13 +612,13 @@ end
 
 launched_scene.fuel_refill = function()
 	local rocket = launched_scene.rocket
-	local level = get_level(fuel)
-	local refill = get_value_2(fuel_refill, level)
+	local level = get_level(v.fuel)
+	local refill = get_value_2(v.fuel_refill, level)
 	rocket.fuel = math.min(rocket.fuel + refill, rocket.fuel_max)
 end
 
 launched_scene.earn_cash = function(boost)
-	cash = cash + boost
+	v.cash = v.cash + boost
 end
 
 launched_scene.meteorite_hit = function()
@@ -697,10 +699,10 @@ launched_scene.reset = function()
 		y = 200,
 		dy = -1,
 		vx = 1200,
-		ax = get_value(acceleration),
+		ax = get_value(v.acceleration),
 		gx = -250,
-		fuel_max = get_value(fuel),
-		fuel = get_value(fuel),
+		fuel_max = get_value(v.fuel),
+		fuel = get_value(v.fuel),
 		hit = false,
 		switch_dir = 0,
 		fuel_pc = function(self)
@@ -758,7 +760,7 @@ launched_scene.update = function(dt)
 	local rocket = launched_scene.rocket
 	launched_scene.game_updater(function()
 		game_time = game_time + dt
-		local f_hit = get_value(durability)
+		local f_hit = get_value(v.durability)
 		local burn_rate_active = 16
 		local burn_rate_passive = 4
 		rocket.fuel = math.max(0, rocket.fuel - burn_rate_passive * dt)
@@ -799,7 +801,7 @@ launched_scene.update = function(dt)
 	local has_objects = table.maxn(launched_scene.objects) > 0
 	if has_objects and launched_scene.objects[1].x < launched_scene.scroll_x then
 		table.remove(launched_scene.objects, 1)
-		cash = cash + 10
+		v.cash = v.cash + 10
 	end
 	-- rewind stars
 	for _, star in ipairs(launched_scene.stars) do
@@ -849,7 +851,7 @@ launched_scene.draw = function()
 	love.graphics.rectangle('fill', 10, 10, distance_width, 1)
 	love.graphics.circle('fill', 10+distance_travelled, 10, 5)
 	-- meters
-	local wallet = string.format('$%s', cash)
+	local wallet = string.format('$%s', v.cash)
 	love.graphics.print(wallet, 10, H-35, 0, 1, -1)
 	local time = string.format('%.1f', game_time)
 	love.graphics.printf(time, 0, H-35, W-10, 'right', 0, 1, -1)
