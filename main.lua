@@ -48,7 +48,6 @@ local fuel_grid
 local cash_grid
 local game_time
 
-local title_scene = {}
 local moon_scene = {}
 local launched_scene = {}
 
@@ -109,44 +108,6 @@ end
 
 local function get_cost(upgrade)
 	return upgrade.costs[upgrade.current_level]
-end
-
---[[
-   [ title_scene
-   ]]
-
-title_scene.show = function()
-	title_scene.image = love.graphics.newImage('assets/cover.png')
-	title_scene.launch = fn.button(lf.get_texture('launch.png'), W/2, H*3/4)
-end
-
-title_scene.update = function(dt)
-end
-
-title_scene.draw = function()
-	local im = title_scene.image
-	local start = title_scene.launch
-	love.graphics.draw(im, 0, 0, 0, W/im:getWidth(), H/im:getHeight())
-	love.graphics.draw(start.tex, start.x, start.y, 0, 1, 1, start.width/2, start.height/2)
-end
-
-title_scene.keypressed = function(key, scancode, is_repeat)
-end
-
-title_scene.keyreleased = function(key, scancode)
-	if key == 'space' then
-		lf.switch_to(screens.moon)
-	end
-end
-
-title_scene.clicked = function(gx, gy)
-	local w, h = love.graphics.getPixelDimensions()
-	love.graphics.origin()
-	love.graphics.scale(w/W, h/H)
-	local x, y = love.graphics.transformPoint(gx, gy)
-	if fn.contains_centre(title_scene.launch, x, y) then
-		lf.switch_to(screens.moon)
-	end
 end
 
 --[[
@@ -667,18 +628,24 @@ lf.init = function()
 	game_time = 0
 	gen_grids()
 	love.graphics.setBackgroundColor(0, 0, 30 / 255)
-	lf.add_screen('title', title_scene)
+	lf.load_screen('title', 'screens/title')
 	lf.add_screen('moon', moon_scene)
 	lf.add_screen('launched', launched_scene)
 	lf.switch_to(screens.title)
 end
 
 love.keypressed = function(key, scancode, is_repeat)
-	lf.current_screen().keypressed(key, scancode, is_repeat)
+	local screen = lf.current_screen()
+	if screen.keypressed then
+		screen.keypressed(key, scancode, is_repeat)
+	end
 end
 
 love.keyreleased = function(key, scancode)
-	lf.current_screen().keyreleased(key, scancode)
+	local screen = lf.current_screen()
+	if screen.keyreleased then
+		screen.keyreleased(key, scancode)
+	end
 end
 
 love.mousereleased = function(x, y, button, istouch, presses)
