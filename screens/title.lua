@@ -15,6 +15,13 @@ return {
 		launch = fn.button(lf.get_texture('launch.png'), W/2, H*3/4)
 	end,
 
+	hide = function()
+		-- we can safely dispose images here
+		-- title is being shown only once
+		image = nil
+		launch = nil
+	end,
+
 	update = function(_, _)
 		-- do nothing
 	end,
