@@ -1,5 +1,6 @@
 local lf = require("lib/love-frame")
 local anim8 = require("lib/anim8/anim8")
+local fn = require('funs')
 
 local screens = lf.screens()
 
@@ -10,8 +11,13 @@ local TIME_STEP = 0.36329 / 2
 local DESTINATION_DISTANCE = 1000000
 local STARS_COUNT = 25
 
--- upgrades
+local W, H = 800, 600
+local W_2, H_2 = W/2, H/2
 local v = lf.data({
+	W = W,
+	H = H,
+	W_2 = W_2,
+	H_2 = H_2,
 	cash = 0,
 	fuel = {
 		current_level = 1,
@@ -35,8 +41,7 @@ local v = lf.data({
 	},
 })
 
-local W, H, W_2, H_2
-local SPAWN_DISTANCE
+local SPAWN_DISTANCE = W * 4
 local rocket_grid
 local asteroid_grid
 local fuel_grid
@@ -50,43 +55,6 @@ local launched_scene = {}
 --[[
    [ utils
    ]]
-
-local function rep(n, f)
-	while n > 0 do
-		f()
-		n = n - 1
-	end
-end
-
-local function lerp(x, y, a)
-	return y * a + x * (1 - a)
-end
-
-local function clamp(x, min, max)
-	if x < min then
-		return min
-	elseif x > max then
-		return max
-	else
-		return x
-	end
-end
-
-local function sgn(x)
-	if x > 0 then
-		return 1
-	elseif x < 0 then
-		return -1
-	else
-		return 0
-	end
-end
-
-local function curry1(fun, arg)
-	return function()
-		return fun(arg)
-	end
-end
 
 local function spriteify(name, obj)
 	local tex = lf.get_texture(name)
@@ -106,172 +74,6 @@ local function animateify(name, grid, frames, obj)
 	obj.width_2 = grid.frameWidth / 2
 	obj.height_2 = grid.frameHeight / 2
 	return obj
-end
-
-local function contains(obj, x, y)
-	if x < obj.x or x > obj.x + obj.width then
-		return false
-	end
-	if y < obj.y or y > obj.y + obj.height then
-		return false
-	end
-	return true
-end
-
-local function contains_centre(obj, x, y)
-	local dx = math.abs(obj.x - x)
-	if dx > obj.width/2 then
-		return false
-	end
-	local dy = math.abs(obj.y - y)
-	if dy > obj.height/2 then
-		return false
-	end
-	return true
-end
-
-local function clickable()
-	local objects = {}
-	local handlers = {}
-	local t =  {
-		add = function(obj, handler)
-			table.insert(objects, obj)
-			table.insert(handlers, handler)
-		end,
-		click = function(x, y)
-			for i, obj in ipairs(objects) do
-				if contains(obj, x, y) then
-					handlers[i](x, y)
-				end
-			end
-		end,
-	}
-	local mt = {
-		__next = function(_, k)
-			return next(objects, k)
-		end,
-	}
-	return setmetatable(t, mt)
-end
-
-local function button(image_name, x, y)
-	local tex = lf.get_texture(image_name)
-	return {
-		tex = tex,
-		x = x,
-		y = y,
-		width = tex:getWidth(),
-		height = tex:getHeight(),
-	}
-end
-
-local function table_sum(tab)
-	local sum = 0
-	for _, val in ipairs(tab) do
-		sum = sum + val
-	end
-	return sum
-end
-
-local function decayed(initial, half_life)
-	return {
-		initial = initial,
-		value = initial,
-		time = 0,
-		half_life = half_life,
-		update = function(self, dt)
-			self.time = self.time + dt
-		end,
-		get = function(self)
-			return self.initial * math.exp(-self.time / self.half_life)
-		end,
-		reset = function(self, new_initial)
-			self.initial = new_initial
-			self.value = new_initial
-			self.time = 0
-		end,
-	}
-end
-
-local function transistor(initial_state)
-	local t = {
-		call = nil,
-		call_on = function(fun)
-			fun()
-		end,
-		call_off = function(_)
-			-- do nothing
-		end,
-		set = function(self, state)
-			if state then
-				self.call = self.call_on
-			else
-				self.call = self.call_off
-			end
-		end,
-	}
-	t:set(initial_state)
-	return setmetatable(t, {
-		__call = function(tr, fun)
-			tr.call(fun)
-		end,
-	})
-end
-
-local function deferred(timeout, reset_proc, func)
-	return {
-		initial_timeout = timeout,
-		timeout = timeout,
-		update = function(self, dt)
-			self.timeout = self.timeout - dt
-			if self.timeout <= 0 then
-				func(dt)
-				reset_proc(self)
-			end
-		end,
-	}
-end
-
-local function conditional(deferred, predicate)
-	return {
-		parent = deferred,
-		update = function(self, dt)
-			if predicate() then
-				self.parent:update(dt)
-			end
-		end,
-	}
-end
-
-local function reset(deferred)
-	deferred.timeout = deferred.timeout + deferred.initial_timeout
-	return deferred
-end
-
-local function continue(deferred)
-	deferred.timeout = 0
-	return deferred
-end
-
-local function stop(deferred)
-	deferred.update = function(_, _)
-		-- do nothing
-	end
-	return deferred
-end
-
-local function group()
-	local objects = {}
-	return {
-		add = function(deferred)
-			table.insert(objects, deferred)
-		end,
-		update = function(dt)
-			for _, obj in ipairs(objects) do
-				obj:update(dt)
-			end
-		end,
-	}
 end
 
 --[[
@@ -315,7 +117,7 @@ end
 
 title_scene.show = function()
 	title_scene.image = love.graphics.newImage('assets/cover.png')
-	title_scene.launch = button('launch.png', W/2, H*3/4)
+	title_scene.launch = fn.button(lf.get_texture('launch.png'), W/2, H*3/4)
 end
 
 title_scene.update = function(dt)
@@ -342,7 +144,7 @@ title_scene.clicked = function(gx, gy)
 	love.graphics.origin()
 	love.graphics.scale(w/W, h/H)
 	local x, y = love.graphics.transformPoint(gx, gy)
-	if contains_centre(title_scene.launch, x, y) then
+	if fn.contains_centre(title_scene.launch, x, y) then
 		lf.switch_to(screens.moon)
 	end
 end
@@ -376,13 +178,13 @@ moon_scene.upgrade = function(upgrade)
 end
 
 moon_scene.create_button = function(image_name, x, y, handler)
-	local btn = button(image_name, x, y)
+	local btn = fn.button(lf.get_texture(image_name), x, y)
 	moon_scene.buttons.add(btn, handler)
 	return btn
 end
 
 moon_scene.create_upgrade_button = function(name, x, y, upgrade)
-	local handler = curry1(moon_scene.upgrade, upgrade)
+	local handler = fn.curry1(moon_scene.upgrade, upgrade)
 	local btn = moon_scene.create_button('up-dummy.png', x, y, handler) -- image name will be updated in update_upgrade_button
 	btn.upgrade = upgrade
 	btn.name = name
@@ -424,11 +226,11 @@ moon_scene.show = function()
 	moon_scene.prepare_data()
 	-- viewport origin is at bottom, centre and goes right and up
 	lf.setup_viewport(W, -H)
-	moon_scene.buttons = clickable()
+	moon_scene.buttons = fn.clickable()
 	moon_scene.fuel_upgrade = moon_scene.create_upgrade_button('fuel', 25, H-150-10, v.fuel)
 	moon_scene.acceleration_upgrade = moon_scene.create_upgrade_button('acceleration', 350, H-150-10, v.acceleration)
 	moon_scene.durability_upgrade = moon_scene.create_upgrade_button('durability', 650, H-150-10, v.durability)
-	moon_scene.launch = moon_scene.create_button('launch.png', W/2-123, H*1/4-23, curry1(lf.switch_to, launched_scene))
+	moon_scene.launch = moon_scene.create_button('launch.png', W/2-123, H*1/4-23, fn.curry1(lf.switch_to, launched_scene))
 	moon_scene.update_upgrade_buttons()
 end
 
@@ -550,7 +352,7 @@ local function make_randomizer()
 		things = {},
 
 		recalc = function(self)
-			self.weight_total = table_sum(self.weights)
+			self.weight_total = fn.table_sum(self.weights)
 		end,
 
 		add = function(self, weight, thing)
@@ -560,9 +362,9 @@ local function make_randomizer()
 		end,
 
 		get = function(self)
-			local v = love.math.random(1, self.weight_total)
+			local val = love.math.random(1, self.weight_total)
 			for idx, weight in ipairs(self.weights) do
-				if v < weight then
+				if val < weight then
 					return self.things[idx]
 				end
 			end
@@ -579,21 +381,21 @@ launched_scene.spawn_object = function(_)
 	local prob_fuel = w_fuel
 	local prob_cash = prob_fuel + w_cash
 	local prob_meteorite = prob_cash + w_meteorite
-	local v = love.math.random(1, w_sum)
-	if v <= prob_fuel then
+	local val = love.math.random(1, w_sum)
+	if val <= prob_fuel then
 		launched_scene.spawn_fuel()
 		launched_scene.last_fuel_spawn = 0
-	elseif v <= prob_cash then
+	elseif val <= prob_cash then
 		launched_scene.spawn_cash()
-	elseif v <= prob_meteorite then
+	elseif val <= prob_meteorite then
 		launched_scene.spawn_meteorite()
 	else
-		print('random out of range:', v)
+		print('random out of range:', val)
 	end
 end
 
 launched_scene.move_y = function(obj, dy)
-	obj.y = clamp(obj.y + dy, Y_STEP * Y_INDEX_MIN, Y_STEP * Y_INDEX_MAX)
+	obj.y = fn.clamp(obj.y + dy, Y_STEP * Y_INDEX_MIN, Y_STEP * Y_INDEX_MAX)
 end
 
 launched_scene.continue_rocket_movement = function(_)
@@ -647,7 +449,7 @@ launched_scene.bounce = function(obj)
 end
 
 launched_scene.switch_dir_to = function(obj, dir)
-	obj.dy = sgn(dir)
+	obj.dy = fn.sgn(dir)
 end
 
 launched_scene.run_failed = function()
@@ -673,10 +475,10 @@ launched_scene.back_to_life = function(_)
 		print('game done')
 	end
 	launched_scene.game_updater:set(false)
-	stop(launched_scene.rocket_mover)
-	stop(launched_scene.spawner)
-	launched_scene.deferrer.add(deferred(4, continue, warp))
-	launched_scene.deferrer.add(conditional(deferred(1, stop, game_complete), offscreen))
+	fn.stop(launched_scene.rocket_mover)
+	fn.stop(launched_scene.spawner)
+	launched_scene.deferrer.add(fn.deferred(4, fn.continue, warp))
+	launched_scene.deferrer.add(fn.conditional(fn.deferred(1, fn.stop, game_complete), offscreen))
 end
 
 launched_scene.reset = function()
@@ -709,21 +511,21 @@ launched_scene.reset = function()
 			return self.fuel / self.fuel_max
 		end,
 	})
-	launched_scene.game_updater = transistor(true)
+	launched_scene.game_updater = fn.transistor(true)
 	launched_scene.rocket.offset_x = launched_scene.rocket.width + 10
 	launched_scene.objects = {}
-	launched_scene.rocket_mover = deferred(TIME_STEP, reset, launched_scene.continue_rocket_movement)
+	launched_scene.rocket_mover = fn.deferred(TIME_STEP, fn.reset, launched_scene.continue_rocket_movement)
 	local spawn_delta = launched_scene.rocket.width * 4.5
-	launched_scene.spawner = deferred(spawn_delta, reset, launched_scene.spawn_object)
-	launched_scene.ender = conditional(deferred(1, reset, launched_scene.to_the_moon), launched_scene.run_failed)
-	launched_scene.completer = conditional(deferred(1, stop, launched_scene.back_to_life), launched_scene.run_completed)
-	launched_scene.deferrer = group()
+	launched_scene.spawner = fn.deferred(spawn_delta, fn.reset, launched_scene.spawn_object)
+	launched_scene.ender = fn.conditional(fn.deferred(1, fn.reset, launched_scene.to_the_moon), launched_scene.run_failed)
+	launched_scene.completer = fn.conditional(fn.deferred(1, fn.stop, launched_scene.back_to_life), launched_scene.run_completed)
+	launched_scene.deferrer = fn.group()
 	launched_scene.deferrer.add(launched_scene.rocket_mover)
 	-- launched_scene.deferrer.add(launched_scene.spawner) -- needs to updated separately
 	launched_scene.deferrer.add(launched_scene.ender)
 	launched_scene.deferrer.add(launched_scene.completer)
 	launched_scene.stars = {}
-	rep(STARS_COUNT, launched_scene.spawn_star)
+	fn.rep(STARS_COUNT, launched_scene.spawn_star)
 end
 
 launched_scene.show = function()
@@ -818,7 +620,7 @@ launched_scene.draw = function()
 	love.graphics.translate(-launched_scene.scroll_x, 0)
 	love.graphics.setColor(1, 1, 1)
 	-- stars
-	local star_scale = clamp(rocket.vx / 1000 + 1, 1, 10) + love.math.random()
+	local star_scale = fn.clamp(rocket.vx / 1000 + 1, 1, 10) + love.math.random()
 	for _, star in ipairs(launched_scene.stars) do
 		love.graphics.draw(lf.get_texture('star.png'), star.x + launched_scene.scroll_x * 3/4, star.y, 0, star_scale, -1)
 	end
@@ -827,7 +629,7 @@ launched_scene.draw = function()
 	for _, obj in ipairs(launched_scene.objects) do
 		if obj.x > launched_scene.scroll_x + W then
 			local dx = obj.x - (launched_scene.scroll_x - rocket.width) - W
-			local scale = clamp(1 - dx / SPAWN_DISTANCE, 0, 1) * 0.75
+			local scale = fn.clamp(1 - dx / SPAWN_DISTANCE, 0, 1) * 0.75
 			obj.animation:draw(obj.image, launched_scene.scroll_x + W - obj.width, obj.y + y_offset, 0, scale, -scale, obj.width_2, obj.height_2)
 		else
 			obj.animation:draw(obj.image, obj.x, obj.y + y_offset, 0, 1, -1, 0, obj.height_2)
@@ -839,13 +641,13 @@ launched_scene.draw = function()
 	love.graphics.pop()
 	-- fuel bar
 	local fuel_pc = rocket:fuel_pc()
-	local r = lerp(2, 0, fuel_pc)
-	local g = lerp(0, 2, fuel_pc)
+	local r = fn.lerp(2, 0, fuel_pc)
+	local g = fn.lerp(0, 2, fuel_pc)
 	love.graphics.setColor(r, g, 0)
 	love.graphics.rectangle('fill', 10, H-10, (W-20)*fuel_pc, -20)
 	-- distance bar
 	love.graphics.setColor(1, 1, 1)
-	local distance_pc = clamp(rocket.x / DESTINATION_DISTANCE, 0, 1)
+	local distance_pc = fn.clamp(rocket.x / DESTINATION_DISTANCE, 0, 1)
 	local distance_width = W - 20
 	local distance_travelled = distance_width * distance_pc
 	love.graphics.rectangle('fill', 10, 10, distance_width, 1)
@@ -863,9 +665,6 @@ end
 
 lf.init = function()
 	game_time = 0
-	W, H = 800, 600
-	W_2, H_2 = W / 2, H / 2
-	SPAWN_DISTANCE = W * 4
 	gen_grids()
 	love.graphics.setBackgroundColor(0, 0, 30 / 255)
 	lf.add_screen('title', title_scene)
