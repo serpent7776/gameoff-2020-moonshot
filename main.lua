@@ -48,7 +48,6 @@ local fuel_grid
 local cash_grid
 local game_time
 
-local moon_scene = {}
 local launched_scene = {}
 
 --[[
@@ -89,153 +88,6 @@ end
 --[[
    [ common
    ]]
-
-local function get_value(upgrade)
-	return upgrade.values[upgrade.current_level]
-end
-
-local function get_value_2(upgrade, level)
-	return upgrade.values[level]
-end
-
-local function get_level(upgrade)
-	return upgrade.current_level
-end
-
-local function get_max_level(upgrade)
-	return #upgrade.values
-end
-
-local function get_cost(upgrade)
-	return upgrade.costs[upgrade.current_level]
-end
-
---[[
-   [ moon_scene
-   ]]
-
-moon_scene.prepare_data = function()
-	moon_scene.bg = lf.get_texture('moon.png')
-end
-
-moon_scene.buy_upgrade = function(upgrade)
-	local can_upgrade = upgrade.current_level < #upgrade.values
-	if can_upgrade and v.cash >= upgrade.costs[upgrade.current_level] then
-		v.cash = v.cash - upgrade.costs[upgrade.current_level]
-		upgrade.current_level = upgrade.current_level + 1
-		return true
-	end
-	return false
-end
-
-moon_scene.upgrade = function(upgrade)
-	local ok = moon_scene.buy_upgrade(upgrade)
-	if ok then
-		lf.play_sound('click.wav')
-	else
-		lf.play_sound('no.wav')
-	end
-	moon_scene.update_upgrade_buttons()
-end
-
-moon_scene.create_button = function(image_name, x, y, handler)
-	local btn = fn.button(lf.get_texture(image_name), x, y)
-	moon_scene.buttons.add(btn, handler)
-	return btn
-end
-
-moon_scene.create_upgrade_button = function(name, x, y, upgrade)
-	local handler = fn.curry1(moon_scene.upgrade, upgrade)
-	local btn = moon_scene.create_button('up-dummy.png', x, y, handler) -- image name will be updated in update_upgrade_button
-	btn.upgrade = upgrade
-	btn.name = name
-	return btn
-end
-
-moon_scene.update_upgrade_button = function(button)
-	local level = get_level(button.upgrade)
-	local image = string.format('up-%s-%d.png', button.name, level)
-	button.tex = lf.get_texture(image)
-end
-
-moon_scene.update_upgrade_buttons = function()
-	moon_scene.update_upgrade_button(moon_scene.fuel_upgrade)
-	moon_scene.update_upgrade_button(moon_scene.acceleration_upgrade)
-	moon_scene.update_upgrade_button(moon_scene.durability_upgrade)
-end
-
-moon_scene.draw_button = function(btn)
-	love.graphics.draw(btn.tex, btn.x, btn.y, 0, 1, -1, 0, btn.height)
-end
-
-moon_scene.draw_upgrade_button = function(btn)
-	moon_scene.draw_button(btn)
-	local current = get_level(btn.upgrade)
-	local max = get_max_level(btn.upgrade)
-	local level_str = string.format('%d/%d', current, max)
-	love.graphics.printf(level_str, btn.x, btn.y, 100, 'right', 0, 1, -1)
-	local cost = get_cost(btn.upgrade)
-	if cost then
-		local cost_str = string.format('$%d', cost)
-		love.graphics.printf(cost_str, btn.x, btn.y-20, 100, 'right', 0, 1, -1)
-	end
-end
-
-moon_scene.show = function()
-	launched_scene.last_fuel_spawn = 0
-	launched_scene.scroll_x = 0
-	moon_scene.prepare_data()
-	-- viewport origin is at bottom, centre and goes right and up
-	lf.setup_viewport(W, -H)
-	moon_scene.buttons = fn.clickable()
-	moon_scene.fuel_upgrade = moon_scene.create_upgrade_button('fuel', 25, H-150-10, v.fuel)
-	moon_scene.acceleration_upgrade = moon_scene.create_upgrade_button('acceleration', 350, H-150-10, v.acceleration)
-	moon_scene.durability_upgrade = moon_scene.create_upgrade_button('durability', 650, H-150-10, v.durability)
-	moon_scene.launch = moon_scene.create_button('launch.png', W/2-123, H*1/4-23, fn.curry1(lf.switch_to, launched_scene))
-	moon_scene.update_upgrade_buttons()
-end
-
-moon_scene.keypressed = function(key, scancode, is_repeat)
-end
-
-moon_scene.keyreleased = function(key, scancode)
-	if key == 'space' then
-		lf.switch_to(screens.launched)
-	elseif key == '1' then
-		moon_scene.upgrade(v.fuel)
-	elseif key == '2' then
-		moon_scene.upgrade(v.acceleration)
-	elseif key == '3' then
-		moon_scene.upgrade(v.durability)
-	end
-end
-
-moon_scene.clicked = function(gx, gy)
-	local w, h = love.graphics.getPixelDimensions()
-	love.graphics.origin()
-	love.graphics.scale(w/W, h/-H)
-	love.graphics.translate(0, -H)
-	local x, y = love.graphics.transformPoint(gx, gy)
-	moon_scene.buttons.click(x, y)
-end
-
-moon_scene.update = function(dt)
-end
-
-moon_scene.draw = function()
-	love.graphics.translate(0, -H)
-	love.graphics.push()
-	love.graphics.translate(W_2, 0)
-	local bg = moon_scene.bg
-	love.graphics.draw(bg, 0, 0, 0, 1, -1, bg:getWidth()/2, bg:getHeight())
-	love.graphics.pop()
-	moon_scene.draw_upgrade_button(moon_scene.fuel_upgrade)
-	moon_scene.draw_upgrade_button(moon_scene.acceleration_upgrade)
-	moon_scene.draw_upgrade_button(moon_scene.durability_upgrade)
-	moon_scene.draw_button(moon_scene.launch)
-	local wallet = string.format('$%s', v.cash)
-	love.graphics.printf(wallet, 25, 25, 100, 'left', 0, 1, -1)
-end
 
 --[[
    [ launched_scene
@@ -375,8 +227,8 @@ end
 
 launched_scene.fuel_refill = function()
 	local rocket = launched_scene.rocket
-	local level = get_level(v.fuel)
-	local refill = get_value_2(v.fuel_refill, level)
+	local level = fn.get_level(v.fuel)
+	local refill = fn.get_value_2(v.fuel_refill, level)
 	rocket.fuel = math.min(rocket.fuel + refill, rocket.fuel_max)
 end
 
@@ -443,6 +295,8 @@ launched_scene.back_to_life = function(_)
 end
 
 launched_scene.reset = function()
+	launched_scene.last_fuel_spawn = 0
+	launched_scene.scroll_x = 0
 	local grid = rocket_grid
 	local frames = rocket_grid(
 		'1-5',1,
@@ -462,10 +316,10 @@ launched_scene.reset = function()
 		y = 200,
 		dy = -1,
 		vx = 1200,
-		ax = get_value(v.acceleration),
+		ax = fn.get_value(v.acceleration),
 		gx = -250,
-		fuel_max = get_value(v.fuel),
-		fuel = get_value(v.fuel),
+		fuel_max = fn.get_value(v.fuel),
+		fuel = fn.get_value(v.fuel),
 		hit = false,
 		switch_dir = 0,
 		fuel_pc = function(self)
@@ -523,7 +377,7 @@ launched_scene.update = function(dt)
 	local rocket = launched_scene.rocket
 	launched_scene.game_updater(function()
 		game_time = game_time + dt
-		local f_hit = get_value(v.durability)
+		local f_hit = fn.get_value(v.durability)
 		local burn_rate_active = 16
 		local burn_rate_passive = 4
 		rocket.fuel = math.max(0, rocket.fuel - burn_rate_passive * dt)
@@ -629,7 +483,7 @@ lf.init = function()
 	gen_grids()
 	love.graphics.setBackgroundColor(0, 0, 30 / 255)
 	lf.load_screen('title', 'screens/title')
-	lf.add_screen('moon', moon_scene)
+	lf.load_screen('moon', 'screens/moon')
 	lf.add_screen('launched', launched_scene)
 	lf.switch_to(screens.title)
 end

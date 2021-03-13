@@ -202,4 +202,24 @@ fn.group = function()
 	}
 end
 
+fn.get_value = function(upgrade)
+	return upgrade.values[upgrade.current_level]
+end
+
+fn.get_value_2 = function(upgrade, level)
+	return upgrade.values[level]
+end
+
+fn.get_level = function(upgrade)
+	return upgrade.current_level
+end
+
+fn.get_max_level = function(upgrade)
+	return #upgrade.values
+end
+
+fn.get_cost = function(upgrade)
+	return upgrade.costs[upgrade.current_level]
+end
+
 return fn
